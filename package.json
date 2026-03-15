@@ -1,0 +1,34 @@
+{
+  "name": "paparazzo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "typecheck:watch": "tsc --noEmit --watch",
+    "lint": "biome check .",
+    "lint:watch": "node --watch-path './src' node_modules/.bin/biome check . --fix",
+    "test:unit": "node --test 'src/**/*.spec.ts'",
+    "test:int": "node --test 'src/**/*.test.ts'",
+    "test": "node --test 'src/**/*.spec.ts' 'src/**/*.test.ts'",
+    "test:watch": "node --watch --test 'src/**/*.spec.ts' 'src/**/*.test.ts'",
+    "test:coverage": "node --experimental-test-coverage --test 'src/**/*.spec.ts' 'src/**/*.test.ts'",
+    "start": "node src/index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:gerardolima/paparazzo.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.7",
+    "@types/node": "^25.5.0",
+    "typescript": "^5.9.3"
+  }
+}

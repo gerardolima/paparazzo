@@ -11,7 +11,7 @@ This section outlines the final technical decisions that guide the project.
 | Decision | Choice | Rationale |
 |---|---|---|
 | **Language** | TypeScript (Node.js 24) | Native TS execution (via `--strip-types` or `nodenext`), no build step required. Best ecosystem for browser automation. |
-| **Testing** | Node 24 native (`node:test`) | Zero extra dependencies. Built-in mocking, assertions, and coverage (`--experimental-test-coverage`). |
+| **Testing** | Node 24 native (`node:test`) | Built-in mocking, assertions, and coverage. When writing tests, `it` descriptions MUST NOT use the word "should" (e.g., use `it('returns Hello World')`). |
 | **Linting/Types** | Biome + `tsc` | Fast formatting and linting with Biome. Native type-checking with `tsc`. |
 | **Methodology** | Agile / TDD | Milestone-driven incremental delivery. Tests (`*.spec.ts` for unit, `*.test.ts` for integration) are written before implementation. |
 | **CI/CD** | GitHub Actions | Feature-branch development. Main branch is protected. Feature branches must be merged into main via PR flow. Enforces typecheck, linting, and tests (with ≥80% coverage) on every PR. |
@@ -26,6 +26,15 @@ This section outlines the final technical decisions that guide the project.
 ## Part 2: Project Plan (Agile Milestones)
 
 The project is built incrementally. Each milestone delivers a working, testable feature. **Dependencies are only imported and installed when their specific milestone begins.**
+
+### Agile Workflow Rules
+**Before starting work on a new milestone:**
+1. Assess that the work on the previous milestone is thoroughly done.
+2. Create a new branch based on `main` (e.g., `chore-setup`, `feat-make-printscreen`, etc.).
+
+**When work on a milestone is completed:**
+1. Check in with the user (ask if everything is alright).
+2. Once approved, create a good descriptive commit message, commit the changes, and push to GitHub (which triggers the PR pipeline).
 
 ### Milestone 1: Basic Setup & Project Skeleton
 **Goal**: The most basic working version. Implements a "Hello World" orchestrator, establishes the testing/linting baseline, and ensures all npm scripts work perfectly (including `--watch` modes).

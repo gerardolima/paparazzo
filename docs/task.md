@@ -2,13 +2,13 @@
 
 ## Milestone 1: Basic Setup ("Hello World")
 - [ ] Initialize `package.json` with basic metadata.
-- [ ] Install Dev Dependencies: `typescript`, `eslint`, `@types/node`, `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser`.
+- [ ] Install Dev Dependencies: `typescript`, `@types/node`, `@biomejs/biome`.
 - [ ] Configure `tsconfig.json` (nodenext, noEmit).
-- [ ] Configure ESLint.
+- [ ] Configure Biome.
 - [ ] Setup NPM Scripts:
   - `typecheck` (`tsc --noEmit`, watch supported)
-  - `linter` (`eslint ...`)
-  - `linter:watch` (`node --watch-path ...`)
+  - `linter` (`biome check .`)
+  - `format` (`biome format --write .`)
   - `test:unit` (`node --test tests/unit/**/*.spec.ts`)
   - `test:int` (`node --test tests/integration/**/*.test.ts`)
   - `test` (combines unit and int)
