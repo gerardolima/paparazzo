@@ -5,7 +5,7 @@ import { after, before, describe, it } from 'node:test'
 import { ScreenCapturer } from './screen-capturer.ts'
 import { LocalStorage } from './storage/local-storage.ts'
 
-describe('ScreenCapturer Integration', () => {
+describe('ScreenCapturer (INTEGRATION)', () => {
   const testDir = './out/test/media'
   const adapter = new LocalStorage(testDir)
   const capturer = new ScreenCapturer(adapter)
@@ -18,13 +18,25 @@ describe('ScreenCapturer Integration', () => {
     await fs.rm(testDir, { recursive: true, force: true })
   })
 
-  it('captures a screenshot of a real webpage', async () => {
-    await capturer.capture('https://example.com', 'example', '2024-01-01')
+  describe('capture', () => {
+    before(async () => {
+      await capturer.capture('https://efe.com/', 'example', '2024-01-01')
+    })
 
-    const screenshotPath = path.join(testDir, '2024-01-01', 'screenshots', 'example.png')
-    const stat = await fs.stat(screenshotPath)
+    it('captures a screenshot of a real webpage', async () => {
+      const screenshotPath = path.join(testDir, '2024-01-01', 'example.png')
+      const stat = await fs.stat(screenshotPath)
 
-    assert.ok(stat.isFile())
-    assert.ok(stat.size > 0, 'Screenshot should not be empty')
+      assert.ok(stat.isFile())
+      assert.ok(stat.size > 0, 'Screenshot should not be empty')
+    })
+
+    it('extracts text from a real webpage', async () => {
+      const textPath = path.join(testDir, '2024-01-01', 'example.md')
+      const textStat = await fs.stat(textPath)
+      assert.ok(textStat.isFile())
+      const content = await fs.readFile(textPath, 'utf8')
+      assert.ok(content.length > 0, 'Extracted text should not be empty')
+    })
   })
 })

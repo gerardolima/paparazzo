@@ -34,7 +34,8 @@ This section outlines the final technical decisions that guide the project.
 ### Instructions
 
 #### Before starting work on a new milestone:
-1. Create a new branch, based on `main` (e.g., `chore-setup`, `feat-make-printscreens`, ...).
+1. Create a new branch, based on `main` (e.g., `chore-setup`, `feat-1-capture-printscreens`, ...).
+2. Change context to this newly created branch
 
 #### When work on a milestone is completed:
 1. Push the feature branch to GitHub.
