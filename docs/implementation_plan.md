@@ -14,7 +14,7 @@ This section outlines the final technical decisions that guide the project.
 | **Testing** | Node 24 native (`node:test`) | Built-in mocking, assertions, and coverage. When writing tests, `it` descriptions MUST NOT use the word "should" (e.g., use `it('returns Hello World')`). |
 | **Linting/Types** | Biome + `tsc` | Fast formatting and linting with Biome. Native type-checking with `tsc`. |
 | **Methodology** | Agile / TDD | Milestone-driven incremental delivery. Tests (`*.spec.ts` for unit, `*.test.ts` for integration) are written before implementation. |
-| **CI/CD** | GitHub Actions | Feature-branch development. Main branch is protected. Feature branches must be merged into main via PR flow. Enforces typecheck, linting, and tests (with ≥80% coverage) on every PR. |
+| **CI/CD** | GitHub Actions | Feature-branch development. Enforces typecheck, linting, and tests (with ≥80% coverage) on every changeset. |
 | **Browser Runner** | Playwright | Robust full-page capturing and text extraction. Introduced only in Milestone 2. |
 | **Translation** | `google-translate-api-x` | Unofficial but free Google Translate endpoint. Markdown output prevents complex CSS/DOM manipulation. |
 | **Email** | Nodemailer | Standard SMTP client for the final notification. |
@@ -29,12 +29,14 @@ The project is built incrementally. Each milestone delivers a working, testable 
 
 ### Agile Workflow Rules
 **Before starting work on a new milestone:**
-1. Assess that the work on the previous milestone is thoroughly done.
-2. Create a new branch based on `main` (e.g., `chore-setup`, `feat-make-printscreen`, etc.).
+1. Assess that the work on the previous milestone is done.
+2. Create a new branch, based on `main` (e.g., `chore-setup`, `feat-make-printscreens`, ...).
 
 **When work on a milestone is completed:**
-1. Check in with the user (ask if everything is alright).
-2. Once approved, create a good descriptive commit message, commit the changes, and push to GitHub (which triggers the PR pipeline).
+1. Ask me if everything is alright.
+2. Create a good commit message, commit the changes and push to GitHub.
+3. Merge the current branch into master (ensure a linear git history).
+4. Return to the main branch.
 
 ### Milestone 1: Basic Setup & Project Skeleton
 **Goal**: The most basic working version. Implements a "Hello World" orchestrator, establishes the testing/linting baseline, and ensures all npm scripts work perfectly (including `--watch` modes).
