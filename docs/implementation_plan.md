@@ -23,20 +23,41 @@ This section outlines the final technical decisions that guide the project.
 
 ---
 
-## Part 2: Project Plan (Agile Milestones)
+## Part 2: Code management
+
+- Don't make irreversible changes without asking me first.
+- Commit often in the feature branches, with small and incremental changes.
+- Actively verify code before each commit:
+  - Always run typecheck, lint and tests after making changes to the code.
+  - Use the feedback accordingly.
+
+### Instructions
+
+#### Before starting work on a new milestone:
+1. Create a new branch, based on `main` (e.g., `chore-setup`, `feat-make-printscreens`, ...).
+
+#### When work on a milestone is completed:
+1. Push the feature branch to GitHub.
+2. Merge the current branch into master
+   - use squash and fast forward only, to ensure a linear and clean git history
+   - use a good commit message, that summarizes the changes in the branch
+3. Return to the main branch.
+
+### Modes
+
+1. Regular mode (pairing with me)
+   - when in this mode, ask for feedback before committing code
+2. Autonomous mode (only you)
+   - when in this mode, you can make commit code without asking for feedback;
+   - the rule "Don't make irreversible changes without asking me first." is very important in this mode;
+   - if you commit something wrong, I can always revert it, after manual inspection;
+   - this mode is intended for when I'm not available to provide feedback.
+
+---
+
+## Part 3: Project Plan (Agile Milestones)
 
 The project is built incrementally. Each milestone delivers a working, testable feature. **Dependencies are only imported and installed when their specific milestone begins.**
-
-### Agile Workflow Rules
-**Before starting work on a new milestone:**
-1. Assess that the work on the previous milestone is done.
-2. Create a new branch, based on `main` (e.g., `chore-setup`, `feat-make-printscreens`, ...).
-
-**When work on a milestone is completed:**
-1. Ask me if everything is alright.
-2. Create a good commit message, commit the changes and push to GitHub.
-3. Merge the current branch into master (ensure a linear git history).
-4. Return to the main branch.
 
 ### Milestone 1: Basic Setup & Project Skeleton
 **Goal**: The most basic working version. Implements a "Hello World" orchestrator, establishes the testing/linting baseline, and ensures all npm scripts work perfectly (including `--watch` modes).
