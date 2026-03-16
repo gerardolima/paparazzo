@@ -5,4 +5,5 @@
 export interface Storage {
   saveScreenshot(filename: string, data: Buffer): Promise<void>
   saveText(filename: string, content: string): Promise<void>
+  listEntries(dateStr: string): Promise<string[]>
 }

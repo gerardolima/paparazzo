@@ -45,4 +45,13 @@ describe('LocalStorage', () => {
     const savedContent = await fs.readFile(path.join(testDir, filename), { encoding: 'utf-8' })
     assert.equal(savedContent, content)
   })
+
+  it('lists entries in a directory', async () => {
+    const dateDir = '2024-01-01'
+    await adapter.saveText(`${dateDir}/a.md`, 'content')
+    await adapter.saveScreenshot(`${dateDir}/b.png`, Buffer.from('data'))
+
+    const entries = await adapter.listEntries(dateDir)
+    assert.deepEqual(entries.sort(), ['a.md', 'b.png'])
+  })
 })

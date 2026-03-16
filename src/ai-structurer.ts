@@ -12,7 +12,9 @@ export class AIStructurer {
   }
 
   async structureAndTranslate(screenshotBuffer: Buffer): Promise<string> {
-    const model = this.genAI.getGenerativeModel({ model: 'gemini-flash-latest' })
+    // const model = 'gemini-flash-latest'
+    const model = 'models/gemini-3.1-flash-lite-preview'
+    const ai = this.genAI.getGenerativeModel({ model })
 
     const prompt = `
       Act as a news editor. Analyze the provided screenshot of a news website.
@@ -26,7 +28,7 @@ export class AIStructurer {
       Return ONLY the Markdown content.
     `
 
-    const result = await model.generateContent([
+    const result = await ai.generateContent([
       prompt,
       {
         inlineData: {

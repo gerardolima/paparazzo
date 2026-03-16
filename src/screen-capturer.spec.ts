@@ -9,6 +9,7 @@ describe('ScreenCapturer', () => {
     const mockStorage: Storage = {
       saveScreenshot: mock.fn(),
       saveText: mock.fn(),
+      listEntries: mock.fn(),
     }
 
     const mockStructurer = {
