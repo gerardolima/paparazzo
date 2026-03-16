@@ -1,14 +1,28 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { after, before, describe, it } from 'node:test'
+import { after, before, describe, it, mock } from 'node:test'
+import { AIStructurer } from './ai-structurer.ts'
 import { ScreenCapturer } from './screen-capturer.ts'
 import { LocalStorage } from './storage/local-storage.ts'
 
 describe('ScreenCapturer (INTEGRATION)', () => {
   const testDir = './out/test/media'
   const adapter = new LocalStorage(testDir)
-  const capturer = new ScreenCapturer(adapter)
+
+  const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY
+  let structurer: AIStructurer
+
+  if (apiKey) {
+    structurer = new AIStructurer(apiKey)
+  } else {
+    // Mock structurer for CI/local runs without a key
+    structurer = {
+      structureAndTranslate: mock.fn(async () => '# Mocked Structured News\n\nContent translated to English.'),
+    } as unknown as AIStructurer
+  }
+
+  const capturer = new ScreenCapturer(adapter, structurer)
 
   before(async () => {
     await fs.rm(testDir, { recursive: true, force: true })

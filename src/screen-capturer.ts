@@ -1,11 +1,14 @@
 import { chromium } from 'playwright'
+import type { AIStructurer } from './ai-structurer.ts'
 import type { Storage } from './storage/storage.ts'
 
 export class ScreenCapturer {
   private readonly storage: Storage
+  private readonly structurer: AIStructurer
 
-  constructor(storage: Storage) {
+  constructor(storage: Storage, structurer: AIStructurer) {
     this.storage = storage
+    this.structurer = structurer
   }
 
   async capture(url: string, siteName: string, dateStr: string): Promise<void> {
@@ -41,9 +44,9 @@ export class ScreenCapturer {
       const screenshotBuffer = await page.screenshot({ fullPage: true })
       await this.storage.saveScreenshot(`${dateStr}/${siteName}.png`, screenshotBuffer)
 
-      // handle text
-      const extractedText = await page.evaluate(() => document.body.innerText)
-      await this.storage.saveText(`${dateStr}/${siteName}.md`, extractedText)
+      // handle text via AI
+      const structuredMarkdown = await this.structurer.structureAndTranslate(screenshotBuffer)
+      await this.storage.saveText(`${dateStr}/${siteName}.md`, structuredMarkdown)
     } finally {
       await browser.close()
     }

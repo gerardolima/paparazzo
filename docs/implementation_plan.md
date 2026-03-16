@@ -89,14 +89,16 @@ The project is built incrementally. Each milestone delivers a working, testable 
   - Formats the raw text into a daily Markdown file alongside the screenshot.
   - Unit tests mocking the page content.
 
-### Milestone 4: Translate Text to English
-**Goal**: Pass the extracted text through the translation API and update the Markdown files with English content.
+### Milestone 4: AI-Powered Layout-Aware Extraction & Translation
+**Goal**: Use a Multimodal LLM to analyze the screenshot, generating a structured Markdown report that preserves the visual hierarchy of the news and translates the content to English.
 
-- **New Dependencies**: `google-translate-api-x`
+- **New Dependencies**: `@google/generative-ai`
 - **Features**:
-  - Implement `translator.ts`.
-  - Detect original language and append translated headlines/body to the Markdown output.
-  - Unit tests mocking the translation API response.
+  - `AIStructurer`: A service that takes the Screenshot (buffer) as the primary source of truth.
+  - Vision Reasoning: AI identifies headlines, priority stories, and sections based on the visual layout.
+  - Unified Pass: Performs both layout structuring and English translation in a single pass.
+  - Output: Updates `{site}.md` in the current daily folder with high-fidelity structured content.
+  - Tests: Integration tests verifying the integrity and quality of the generated Markdown.
 
 ### Milestone 5: Create the Gallery (Browsing Contents)
 **Goal**: Generate a static, browseable HTML report for the day's execution.
