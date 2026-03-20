@@ -20,6 +20,7 @@ This section outlines the final technical decisions that guide the project.
 | **Email** | Nodemailer | Standard SMTP client for the final notification. |
 | **Cloud Adapter** | `StorageAdapter` | An interface abstracting file system operations. Starts with local disk, allowing seamless migration to GCS/S3 later. |
 | **Deployment** | Local POC first | Prove the logic locally with macOS `cron`. Cloud deployment (GCP Cloud Run or AWS Lambda) is deferred to a future phase. |
+| **Source layout** | `src/bin/` + `src/lib/` | Entrypoints (CLI, Lambda handlers) live in `bin/`; library code (capturer, structurer, report generator, storage, config) lives in `lib/`. |
 
 ---
 
@@ -67,7 +68,7 @@ The project is built incrementally. Each milestone delivers a working, testable 
 - **Features**:
   - `package.json` with scripts: `start`, `typecheck`, `linter`, `test:unit`, `test:int`, `test`, `test:coverage`.
   - Minimal `tsconfig.json` and Biome config (`biome.json`).
-  - Basic `src/index.ts` executing a "Hello World" log.
+  - Basic `src/bin/index.ts` executing a "Hello World" log.
   - Setup GitHub Actions CI pipeline (`.github/workflows/ci.yml`).
 
 ### Milestone 2: Capture Printscreens
@@ -94,7 +95,7 @@ The project is built incrementally. Each milestone delivers a working, testable 
 
 - **New Dependencies**: `@google/generative-ai`
 - **Features**:
-  - `AIStructurer`: A service that takes the Screenshot (buffer) as the primary source of truth.
+  - `AIStructurer` (`src/lib/ai-structurer.ts`): A service that takes the Screenshot (buffer) as the primary source of truth.
   - Vision Reasoning: AI identifies headlines, priority stories, and sections based on the visual layout.
   - Unified Pass: Performs both layout structuring and English translation in a single pass.
   - Output: Updates `{site}.md` in the current daily folder with high-fidelity structured content.
@@ -105,7 +106,7 @@ The project is built incrementally. Each milestone delivers a working, testable 
 
 - **New Dependencies**: None.
 - **Features**:
-  - Implement `report-viewer.ts`.
+  - Implement `src/lib/report-generator.ts`.
   - Generates `output/{date}/index.html` with a grid of thumbnails.
   - Links to full screenshots and translated Markdown files.
   - Minimal inline CSS for standalone viewing.

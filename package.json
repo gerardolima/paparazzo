@@ -10,13 +10,14 @@
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc --noEmit --watch",
     "lint": "biome check .",
-    "lint:watch": "node --watch-path './src' node_modules/.bin/biome check . --fix",
-    "test:unit": "node --test 'src/**/*.spec.ts'",
-    "test:int": "node --test 'src/**/*.test.ts'",
-    "test": "node --test 'src/**/*.spec.ts' 'src/**/*.test.ts'",
-    "test:watch": "node --watch --test 'src/**/*.spec.ts' 'src/**/*.test.ts'",
-    "test:coverage": "node --experimental-test-coverage --test 'src/**/*.spec.ts' 'src/**/*.test.ts'",
-    "start": "node src/index.ts"
+    "lint:watch": "node --watch-path './src' --watch-path './infra' node_modules/.bin/biome check . --fix",
+    "test:unit": "node --experimental-test-module-mocks --test 'src/**/*.spec.ts'",
+    "test:int": "node --env-file=.env --test 'src/**/*.test.ts'",
+    "test": "node --env-file=.env --experimental-test-module-mocks --test 'src/**/*.spec.ts' 'src/**/*.test.ts'",
+    "test:watch": "node --env-file=.env --experimental-test-module-mocks --watch --test 'src/**/*.spec.ts' 'src/**/*.test.ts'",
+    "test:coverage": "node --env-file=.env --experimental-test-module-mocks --experimental-test-coverage --test 'src/**/*.spec.ts' 'src/**/*.test.ts'",
+    "start": "node --env-file=.env src/bin/index.ts",
+    "deploy:ci": "cdk deploy --require-approval never"
   },
   "repository": {
     "type": "git",
@@ -26,13 +27,22 @@
   "author": "",
   "license": "ISC",
   "type": "module",
+  "imports": {
+    "#lib/*": "./src/lib/*"
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.4.7",
     "@types/node": "^25.5.0",
+    "aws-cdk": "^2.1112.0",
+    "aws-sdk-client-mock": "^4.1.0",
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1010.0",
+    "@aws-sdk/lib-storage": "^3.1010.0",
     "@google/generative-ai": "^0.24.1",
+    "aws-cdk-lib": "^2.243.0",
+    "constructs": "^10.5.1",
     "playwright": "^1.58.2"
   }
 }

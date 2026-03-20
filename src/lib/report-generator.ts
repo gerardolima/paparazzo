@@ -20,10 +20,10 @@ export class ReportGenerator {
         return `
         <div class="card">
           <h2>${siteName}</h2>
+          ${hasMarkdown ? `<p><a href="${markdownFile}">View Translated Text</a></p>` : ''}
           <a href="${screenshot}" target="_blank">
             <img src="${screenshot}" alt="${siteName} Screenshot">
           </a>
-          ${hasMarkdown ? `<p><a href="${markdownFile}" target="_blank">View Translated Text</a></p>` : ''}
         </div>`
       })
       .join('\n')

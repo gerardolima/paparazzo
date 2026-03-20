@@ -1,13 +1,8 @@
-import { AIStructurer } from './ai-structurer.ts'
-import { ReportGenerator } from './report-generator.ts'
-import { ScreenCapturer } from './screen-capturer.ts'
-import { LocalStorage } from './storage/local-storage.ts'
-
-const SITES = [
-  { name: 'efe', url: 'https://efe.com/' },
-  { name: 'elpais', url: 'https://elpais.com/' },
-  { name: 'elmundo', url: 'https://www.elmundo.es/' },
-]
+import { AIStructurer } from '#lib/ai-structurer.ts'
+import { SITES } from '#lib/config/sites.ts'
+import { ReportGenerator } from '#lib/report-generator.ts'
+import { ScreenCapturer } from '#lib/screen-capturer.ts'
+import { LocalStorage } from '#lib/storage/local-storage.ts'
 
 async function run() {
   const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY
