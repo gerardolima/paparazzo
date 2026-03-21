@@ -12,7 +12,16 @@ export class ScreenCapturer {
   }
 
   async capture(url: string, siteName: string, dateStr: string): Promise<void> {
-    const browser = await chromium.launch()
+    const browser = await chromium.launch({
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--no-zygote',
+        '--single-process',
+      ],
+    })
     const context = await browser.newContext()
     const page = await context.newPage()
 
