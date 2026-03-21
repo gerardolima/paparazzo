@@ -6,8 +6,8 @@ export class S3Storage implements Storage {
   private bucket: string
   private prefix: string
 
-  constructor(bucket: string, region: string = 'us-east-1', prefix: string = 'media/') {
-    this.client = new S3Client({ region })
+  constructor(bucket: string, prefix: string = 'media/') {
+    this.client = new S3Client()
     this.bucket = bucket
     this.prefix = prefix
   }
