@@ -7,6 +7,7 @@
     "doc": "docs"
   },
   "scripts": {
+    "build": "rm -rf out && tsc -p tsconfig.build.json",
     "typecheck": "tsc --noEmit",
     "typecheck:watch": "tsc --noEmit --watch",
     "lint": "biome check .",
@@ -17,7 +18,7 @@
     "test:watch": "node --env-file=.env --experimental-test-module-mocks --watch --test 'src/**/*.spec.ts' 'src/**/*.test.ts'",
     "test:coverage": "node --env-file=.env --experimental-test-module-mocks --experimental-test-coverage --test 'src/**/*.spec.ts' 'src/**/*.test.ts'",
     "start": "node --env-file=.env src/bin/index.ts",
-    "deploy:ci": "cdk deploy --require-approval never"
+    "deploy:ci": "cdk deploy PaparazzoStack --require-approval never"
   },
   "repository": {
     "type": "git",
@@ -27,9 +28,6 @@
   "author": "",
   "license": "ISC",
   "type": "module",
-  "imports": {
-    "#lib/*": "./src/lib/*"
-  },
   "devDependencies": {
     "@biomejs/biome": "^2.4.7",
     "@types/node": "^25.5.0",
@@ -39,6 +37,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1010.0",
+    "@aws-sdk/client-ssm": "^3.1014.0",
     "@aws-sdk/lib-storage": "^3.1010.0",
     "@google/generative-ai": "^0.24.1",
     "aws-cdk-lib": "^2.243.0",

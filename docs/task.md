@@ -35,7 +35,7 @@
 ## Milestone 6: AWS Deployment (CDK + Node 24)
 - [x] Implement `S3StorageAdapter`.
 - [x] Create `Dockerfile` using `public.ecr.aws/lambda/nodejs:24`.
-- [x] Implement Lambda entry points (`src/bin/lambda-worker.ts`, `src/bin/lambda-reporter.ts`).
-- [ ] Setup AWS CDK App (Stack, S3, Step Functions).
-- [ ] Configure GitHub Actions for `cdk deploy`.
+- [x] Implement unified Lambda handler (`src/bin/lambda.ts`) — single Lambda replaces dual-Lambda + Step Functions.
+- [x] Setup AWS CDK App (Stack, S3, EventBridge daily cron → single Lambda).
+- [x] Configure GitHub Actions for `cdk deploy`.
 

@@ -1,0 +1,3 @@
+{
+  "app": "node infra/paparazzo-app.ts"
+}

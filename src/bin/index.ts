@@ -1,8 +1,8 @@
-import { AIStructurer } from '#lib/ai-structurer.ts'
-import { SITES } from '#lib/config/sites.ts'
-import { ReportGenerator } from '#lib/report-generator.ts'
-import { ScreenCapturer } from '#lib/screen-capturer.ts'
-import { LocalStorage } from '#lib/storage/local-storage.ts'
+import { AIStructurer } from '../lib/ai-structurer.ts'
+import { SITES } from '../lib/config/sites.ts'
+import { ReportGenerator } from '../lib/report-generator.ts'
+import { ScreenCapturer } from '../lib/screen-capturer.ts'
+import { LocalStorage } from '../lib/storage/local-storage.ts'
 
 async function run() {
   const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY
