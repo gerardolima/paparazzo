@@ -95,7 +95,7 @@ The project is built incrementally. Each milestone delivers a working, testable 
 
 - **New Dependencies**: `@google/generative-ai`
 - **Features**:
-  - `AIStructurer` (`src/lib/ai-structurer.ts`): A service that takes the Screenshot (buffer) as the primary source of truth.
+  - `AIClient` (`src/lib/ai-client.ts`): A service that takes the Screenshot (buffer) as the primary source of truth.
   - Vision Reasoning: AI identifies headlines, priority stories, and sections based on the visual layout.
   - Unified Pass: Performs both layout structuring and English translation in a single pass.
   - Output: Updates `{site}.md` in the current daily folder with high-fidelity structured content.

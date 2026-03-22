@@ -24,7 +24,7 @@
 
 ## Milestone 4: Translate Text to English (using AI)
 - [x] Install `@google/generative-ai`.
-- [x] Implement `ai-structurer.ts` for vision-based layout analysis and translation.
+- [x] Implement `ai-client.ts` for vision-based layout analysis and translation.
 - [x] Integrate AI step into the orchestrator pipeline.
 
 ## Milestone 5: Create the Gallery
