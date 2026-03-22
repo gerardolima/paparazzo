@@ -10,10 +10,8 @@ export type Site = {
 export function siteSlug(site: Site): string {
   const base = site.name
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g,
-      '-')
-    .replace(/^-|-$/g,
-      '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '')
   return site.version === 'english' ? `${base}-english` : base
 }
 

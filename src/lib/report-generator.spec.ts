@@ -8,7 +8,14 @@ import type { Storage } from './storage/storage.ts'
 type MockFn = ReturnType<typeof mock.fn> & { mock: any }
 
 const sites: Site[] = [
-  { name: 'EFE', description: 'Agencia EFE', country: 'Espanha', version: 'original', url: 'https://efe.com/', enabled: true },
+  {
+    name: 'EFE',
+    description: 'Agencia EFE',
+    country: 'Espanha',
+    version: 'original',
+    url: 'https://efe.com/',
+    enabled: true,
+  },
   {
     name: 'ANSA',
     description: 'Agenzia Nazionale Stampa Associata',

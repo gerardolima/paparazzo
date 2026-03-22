@@ -34,7 +34,7 @@ export class ReportGenerator {
 
     const sectionsHtml = sortedCountries
       .map((country) => {
-        const countryScreenshots = byCountry.get(country)!
+        const countryScreenshots = byCountry.get(country) ?? []
         const cardsHtml = countryScreenshots
           .map((screenshot) => {
             const slug = screenshot.replace('.png', '')

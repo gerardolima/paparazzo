@@ -42,7 +42,7 @@ export class ScreenCapturer {
         await acceptButtons
           .first()
           .click({ timeout: 2000 })
-          .catch(() => { })
+          .catch(() => {})
       }
 
       // Auto-dismiss common cookie banners (basic heuristic)
@@ -51,7 +51,7 @@ export class ScreenCapturer {
         await okButton
           .first()
           .click({ timeout: 2000 })
-          .catch(() => { })
+          .catch(() => {})
       }
 
       // handle image

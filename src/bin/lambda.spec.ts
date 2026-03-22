@@ -28,9 +28,30 @@ mock.module('../lib/ai-client.ts', {
 mock.module('../lib/config/sites.ts', {
   namedExports: {
     SITES: [
-      { name: 'Site1', description: 'Desc', country: 'CountryA', version: 'original', url: 'https://site1.com', enabled: true },
-      { name: 'Site2', description: null, country: 'CountryB', version: 'english', url: 'https://site2.com', enabled: true },
-      { name: 'Site3', description: 'Disabled', country: 'CountryC', version: 'original', url: 'https://site3.com', enabled: false },
+      {
+        name: 'Site1',
+        description: 'Desc',
+        country: 'CountryA',
+        version: 'original',
+        url: 'https://site1.com',
+        enabled: true,
+      },
+      {
+        name: 'Site2',
+        description: null,
+        country: 'CountryB',
+        version: 'english',
+        url: 'https://site2.com',
+        enabled: true,
+      },
+      {
+        name: 'Site3',
+        description: 'Disabled',
+        country: 'CountryC',
+        version: 'original',
+        url: 'https://site3.com',
+        enabled: false,
+      },
     ],
   },
 })

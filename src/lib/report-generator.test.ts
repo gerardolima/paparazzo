@@ -13,8 +13,22 @@ describe('ReportGenerator (INTEGRATION)', () => {
   const dateStr = '2024-01-01'
 
   const sites: Site[] = [
-    { name: 'Test1', description: 'First agency', country: 'CountryA', version: 'original', url: 'https://test1.com', enabled: true },
-    { name: 'Test2', description: null, country: 'CountryB', version: 'original', url: 'https://test2.com', enabled: true },
+    {
+      name: 'Test1',
+      description: 'First agency',
+      country: 'CountryA',
+      version: 'original',
+      url: 'https://test1.com',
+      enabled: true,
+    },
+    {
+      name: 'Test2',
+      description: null,
+      country: 'CountryB',
+      version: 'original',
+      url: 'https://test2.com',
+      enabled: true,
+    },
   ]
 
   before(async () => {
