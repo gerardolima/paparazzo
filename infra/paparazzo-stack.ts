@@ -42,8 +42,8 @@ export class PaparazzoStack extends cdk.Stack {
     const fn = new lambda.DockerImageFunction(this, 'PaparazzoLambda', {
       code: lambda.DockerImageCode.fromImageAsset(dockerImageDir, dockerImageOpts),
       architecture: lambda.Architecture.ARM_64,
-      memorySize: 3072, // 3GB
-      ephemeralStorageSize: cdk.Size.gibibytes(4),
+      memorySize: 2048, // 2GB
+      ephemeralStorageSize: cdk.Size.gibibytes(2),
       timeout: cdk.Duration.minutes(15),
       environment: {
         S3_BUCKET: bucket.bucketName,
