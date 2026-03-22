@@ -1,8 +1,13 @@
 import assert from 'node:assert/strict'
+import os from 'node:os'
+import path from 'node:path'
 import { afterEach, beforeEach, describe, it, mock } from 'node:test'
 import type { Site } from './data/sites.ts'
 import type { AIClient } from './ia-client/ai-client.ts'
 import type { Storage } from './storage/storage.ts'
+
+const mockRm = mock.fn(async (_path: string, _options: { recursive: boolean; force: boolean }) => {})
+mock.module('node:fs/promises', { namedExports: { rm: mockRm } })
 
 const mockPage = {
   route: mock.fn(async (_url: string, _handler: (_: string) => void) => {}),
@@ -12,14 +17,12 @@ const mockPage = {
   screenshot: mock.fn(async () => Buffer.from('fake-png')),
 }
 
-const mockContext = { newPage: mock.fn(async () => mockPage) }
-
-const mockBrowser = {
-  newContext: mock.fn(async () => mockContext),
+const mockContext = {
+  newPage: mock.fn(async () => mockPage),
   close: mock.fn(async () => {}),
 }
 
-const mockChromium = { launch: mock.fn(async () => mockBrowser) }
+const mockChromium = { launchPersistentContext: mock.fn(async () => mockContext) }
 
 mock.module('playwright', { namedExports: { chromium: mockChromium } })
 
@@ -56,9 +59,10 @@ describe('ScreenCapturer', () => {
   })
 
   afterEach(() => {
-    mockChromium.launch.mock.resetCalls()
-    mockBrowser.close.mock.resetCalls()
+    mockChromium.launchPersistentContext.mock.resetCalls()
+    mockContext.close.mock.resetCalls()
     mockPage.route.mock.resetCalls()
+    mockRm.mock.resetCalls()
     mockStorage.saveScreenshot.mock.resetCalls()
     mockStorage.saveText.mock.resetCalls()
     mockAIClient.structureAndTranslate.mock.resetCalls()
@@ -128,7 +132,29 @@ describe('ScreenCapturer', () => {
         message: 'AI service unavailable',
       })
 
-      assert.equal(mockBrowser.close.mock.callCount(), 1)
+      assert.equal(mockContext.close.mock.callCount(), 1)
+    })
+
+    it('removes browser data directory after capture', async () => {
+      const capturer = new ScreenCapturer(mockStorage, mockAIClient)
+      await capturer.capture(testSite, '2024-06-15')
+
+      assert.equal(mockRm.mock.callCount(), 1)
+      assert.equal(mockRm.mock.calls[0].arguments[0], ScreenCapturer.tmpDir)
+      assert.deepEqual(mockRm.mock.calls[0].arguments[1], { recursive: true, force: true })
+    })
+
+    it('removes browser data directory even when capture throws', async () => {
+      mockAIClient.structureAndTranslate.mock.mockImplementation(async () => {
+        throw new Error('AI service unavailable')
+      })
+
+      const capturer = new ScreenCapturer(mockStorage, mockAIClient)
+      await assert.rejects(() => capturer.capture(testSite, '2024-06-15'))
+
+      assert.equal(mockRm.mock.callCount(), 1)
+      assert.equal(mockRm.mock.calls[0].arguments[0], ScreenCapturer.tmpDir)
+      assert.deepEqual(mockRm.mock.calls[0].arguments[1], { recursive: true, force: true })
     })
   })
 })

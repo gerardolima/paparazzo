@@ -1,3 +1,7 @@
+import fs from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
+import { performance } from 'node:perf_hooks'
 import { chromium } from 'playwright'
 import type { Site } from './data/sites.ts'
 import type { AIClient } from './ia-client/ai-client.ts'
@@ -15,6 +19,8 @@ const BLOCKED_DOMAINS = [
 ]
 
 export class ScreenCapturer {
+  public static readonly tmpDir: string = path.join(os.tmpdir(), 'paparazzo-browser')
+
   readonly #storage: Storage
   readonly #aiClient: AIClient
 
@@ -24,7 +30,9 @@ export class ScreenCapturer {
   }
 
   async capture(site: Site, dateStr: string): Promise<void> {
-    const browser = await chromium.launch({
+    const startTime = performance.now()
+
+    const context = await chromium.launchPersistentContext(ScreenCapturer.tmpDir, {
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -36,9 +44,10 @@ export class ScreenCapturer {
         '--disable-background-networking',
         '--disable-default-apps',
         '--js-flags=--max-old-space-size=512',
+        '--disk-cache-size=52428800', // 50 MB
       ],
     })
-    const context = await browser.newContext()
+
     const page = await context.newPage()
 
     try {
@@ -93,7 +102,12 @@ export class ScreenCapturer {
       const structuredMarkdown = await this.#aiClient.structureAndTranslate(screenshotBuffer, site.country)
       await this.#storage.saveText(`${dateStr}/${site.slug}.md`, structuredMarkdown)
     } finally {
-      await browser.close()
+      await context.close()
+      await fs.rm(ScreenCapturer.tmpDir, { recursive: true, force: true })
+
+      const elapsedSecs = ((performance.now() - startTime) / 1000).toFixed(1)
+      const memoryMB = (process.memoryUsage.rss() / 1024 / 1024).toFixed(0)
+      console.log(`  done in ${elapsedSecs}s | memory: ${memoryMB} MB`)
     }
   }
 }
