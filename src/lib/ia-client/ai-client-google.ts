@@ -20,10 +20,10 @@ export class AIClientGoogle implements AIClient {
       Tasks:
       1. Extract all significant news headlines and summaries.
       2. If the text is NOT in English, translate it to English.
-      3. Organize the content into a clean Markdown format.
+      3. Organize the content into clean HTML fragments (using <h2>, <p>, <strong>).
       4. Remove noise like navigation menus, cookie banners, and ads.
 
-      Return ONLY the Markdown content.
+      Return ONLY the HTML fragment content (no <html>, <head>, or <body> tags).
     `
 
     const result = await ai.generateContent([

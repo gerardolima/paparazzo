@@ -17,6 +17,18 @@ export class ReportGenerator {
       slugToSite.set(site.slug, site)
     }
 
+    // Read all available .md files in parallel
+    const slugToContent = new Map<string, string>()
+    await Promise.all(
+      screenshots
+        .filter((s) => files.includes(s.replace('.png', '.md')))
+        .map(async (s) => {
+          const slug = s.replace('.png', '')
+          const content = await this.#storage.readText(`${dateStr}/${slug}.md`)
+          slugToContent.set(slug, content)
+        }),
+    )
+
     // Group screenshots by country
     const byCountry = new Map<string, string[]>()
     for (const screenshot of screenshots) {
@@ -38,20 +50,22 @@ export class ReportGenerator {
           .map((screenshot) => {
             const slug = screenshot.replace('.png', '')
             const site = slugToSite.get(slug)
-            const markdownFile = `${slug}.md`
-            const hasMarkdown = files.includes(markdownFile)
-
             const name = site?.name ?? slug
-            const description = site?.description
+            const url = site?.url ?? ''
+            const languageLabel = site?.version === 'english' ? 'English' : 'Original'
+            const content = slugToContent.get(slug)
 
             return `
         <div class="card">
-          <h3>${name}</h3>
-          ${description ? `<p class="description">${description}</p>` : ''}
-          ${hasMarkdown ? `<p><a href="${markdownFile}">View Translated Text</a></p>` : ''}
-          <a href="${screenshot}" target="_blank">
-            <img src="${screenshot}" alt="${name} Screenshot">
-          </a>
+          <h3>${name} - ${languageLabel} - <a href="${url}" target="_blank">${url}</a></h3>
+          <div class="card-body">
+            <div class="card-image">
+              <a href="${screenshot}" target="_blank">
+                <img src="${screenshot}" alt="${name}">
+              </a>
+            </div>
+            <div class="extracted-text">${content ?? ''}</div>
+          </div>
         </div>`
           })
           .join('\n')
@@ -74,13 +88,15 @@ export class ReportGenerator {
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f4f9; padding: 20px; }
         h2 { border-bottom: 2px solid #007bff; padding-bottom: 5px; margin-top: 30px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
         .card { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 15px; display: flex; flex-direction: column; }
         .card h3 { margin-top: 0; font-size: 1.2rem; }
-        .card .description { color: #666; font-size: 0.9rem; margin: 0 0 10px; }
-        .card img { width: 100%; height: auto; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; }
-        .card a { color: #007bff; text-decoration: none; margin-top: 10px; font-weight: bold; }
+        .card-body { display: flex; gap: 12px; }
+        .card-image { flex: 0 0 50%; }
+        .card-image img { width: 100%; height: auto; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; }
+        .card a { color: #007bff; text-decoration: none; }
         .card a:hover { text-decoration: underline; }
+        .extracted-text { flex: 1; max-height: 500px; font-size: 0.85rem; background: #f8f8f8; padding: 10px; border-radius: 4px; }
     </style>
 </head>
 <body>

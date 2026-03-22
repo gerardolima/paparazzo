@@ -37,7 +37,7 @@ describe('ReportGenerator (INTEGRATION)', () => {
     await fs.rm(testDir, { recursive: true, force: true })
     // Seed some data using slugs that match the sites
     await adapter.saveScreenshot(`${dateStr}/test1.png`, Buffer.from('img1'))
-    await adapter.saveText(`${dateStr}/test1.md`, '# Text 1')
+    await adapter.saveText(`${dateStr}/test1.md`, '<h2>Test1 Headlines</h2><p>Breaking news</p>')
     await adapter.saveScreenshot(`${dateStr}/test2.png`, Buffer.from('img2'))
   })
 
@@ -55,7 +55,7 @@ describe('ReportGenerator (INTEGRATION)', () => {
     const html = await fs.readFile(indexPath, 'utf-8')
     assert.ok(html.includes('test1.png'))
     assert.ok(html.includes('test2.png'))
-    assert.ok(html.includes('test1.md'))
+    assert.ok(html.includes('<h2>Test1 Headlines</h2><p>Breaking news</p>'))
     assert.ok(html.includes('Paparazzo Daily Report'))
   })
 })

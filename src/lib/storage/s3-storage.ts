@@ -1,4 +1,4 @@
-import { ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import type { Storage } from './storage.ts'
 
 export class S3Storage implements Storage {
@@ -34,6 +34,17 @@ export class S3Storage implements Storage {
         ContentType: filename.endsWith('.html') ? 'text/html' : 'text/markdown',
       }),
     )
+  }
+
+  async readText(filename: string): Promise<string> {
+    const key = `${this.#prefix}${filename}`
+    const response = await this.#client.send(
+      new GetObjectCommand({
+        Bucket: this.#bucket,
+        Key: key,
+      }),
+    )
+    return response.Body!.transformToString('utf-8')
   }
 
   async listEntries(dateStr: string): Promise<string[]> {

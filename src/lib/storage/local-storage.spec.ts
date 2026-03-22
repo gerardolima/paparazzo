@@ -46,6 +46,16 @@ describe('LocalStorage', () => {
     assert.equal(savedContent, content)
   })
 
+  it('reads text content from a saved file', async () => {
+    const filename = 'read-test/doc.md'
+    const content = '<h2>Headlines</h2><p>Some news</p>'
+
+    await adapter.saveText(filename, content)
+    const result = await adapter.readText(filename)
+
+    assert.equal(result, content)
+  })
+
   it('lists entries in a directory', async () => {
     const dateDir = '2024-01-01'
     await adapter.saveText(`${dateDir}/a.md`, 'content')

@@ -40,16 +40,17 @@ describe('ScreenCapturer', () => {
   const mockStorage = {
     saveScreenshot: mock.fn(async (_filename: string, _data: Buffer) => {}),
     saveText: mock.fn(async (_filename: string, _content: string) => {}),
+    readText: mock.fn(async (_filename: string): Promise<string> => ''),
     listEntries: mock.fn(async (_dateStr: string): Promise<string[]> => []),
   } as const satisfies Storage
 
   const mockAIClient = {
-    structureAndTranslate: mock.fn(async (_screenshotBuffer: Buffer, _country: string) => '# Translated headlines'),
+    structureAndTranslate: mock.fn(async (_screenshotBuffer: Buffer, _country: string) => '<h2>Translated headlines</h2>'),
   } as const satisfies AIClient
 
   beforeEach(() => {
     mockPage.screenshot.mock.mockImplementation(async () => Buffer.from('fake-png'))
-    mockAIClient.structureAndTranslate.mock.mockImplementation(async () => '# Translated headlines')
+    mockAIClient.structureAndTranslate.mock.mockImplementation(async () => '<h2>Translated headlines</h2>')
   })
 
   afterEach(() => {
@@ -86,7 +87,7 @@ describe('ScreenCapturer', () => {
 
       assert.equal(mockStorage.saveText.mock.callCount(), 1)
       assert.equal(mockStorage.saveText.mock.calls[0].arguments[0], '2024-06-15/example-agency.md')
-      assert.equal(mockStorage.saveText.mock.calls[0].arguments[1], '# Translated headlines')
+      assert.equal(mockStorage.saveText.mock.calls[0].arguments[1], '<h2>Translated headlines</h2>')
     })
 
     it('uses site slug for english version sites', async () => {

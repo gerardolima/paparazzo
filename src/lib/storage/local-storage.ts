@@ -24,6 +24,10 @@ export class LocalStorage implements Storage {
     await fs.writeFile(path.join(this.#baseDir, filename), content, { encoding: 'utf-8' })
   }
 
+  async readText(filename: string): Promise<string> {
+    return fs.readFile(path.join(this.#baseDir, filename), { encoding: 'utf-8' })
+  }
+
   async listEntries(dateStr: string): Promise<string[]> {
     const dir = path.join(this.#baseDir, dateStr)
     try {

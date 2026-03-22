@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { beforeEach, describe, it } from 'node:test'
-import { ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import { GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { mockClient } from 'aws-sdk-client-mock'
 import { S3Storage } from './s3-storage.ts'
 
@@ -36,6 +36,20 @@ describe('S3Storage', () => {
     const calls = s3Mock.commandCalls(PutObjectCommand)
     assert.strictEqual(calls.length, 1)
     assert.strictEqual(calls[0].args[0].input.ContentType, 'text/markdown')
+  })
+
+  it('reads text content from S3', async () => {
+    s3Mock.on(GetObjectCommand).resolves({
+      Body: { transformToString: async () => '<h2>Headlines</h2>' } as never,
+    })
+
+    const result = await storage.readText('2024-01-01/site.md')
+
+    assert.equal(result, '<h2>Headlines</h2>')
+    const calls = s3Mock.commandCalls(GetObjectCommand)
+    assert.strictEqual(calls.length, 1)
+    assert.strictEqual(calls[0].args[0].input.Bucket, bucket)
+    assert.strictEqual(calls[0].args[0].input.Key, 'media/2024-01-01/site.md')
   })
 
   it('lists entries for a specific date', async () => {
