@@ -1,4 +1,3 @@
-import { setTimeout } from 'node:timers/promises'
 import { chromium } from 'playwright'
 import type { AIClient } from './ai-client.ts'
 import type { Site } from './config/sites.ts'

@@ -43,6 +43,7 @@ export class PaparazzoStack extends cdk.Stack {
       code: lambda.DockerImageCode.fromImageAsset(dockerImageDir, dockerImageOpts),
       architecture: lambda.Architecture.ARM_64,
       memorySize: 2048,
+      ephemeralStorageSize: cdk.Size.gibibytes(4),
       timeout: cdk.Duration.minutes(15),
       environment: {
         S3_BUCKET: bucket.bucketName,
