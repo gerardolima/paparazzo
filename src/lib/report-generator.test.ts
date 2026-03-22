@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { after, before, describe, it } from 'node:test'
-import type { Site } from './config/sites.ts'
+import type { Site } from './data/sites.ts'
 import { ReportGenerator } from './report-generator.ts'
 import { LocalStorage } from './storage/local-storage.ts'
 

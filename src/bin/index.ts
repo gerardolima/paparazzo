@@ -1,5 +1,5 @@
 import { AIClient } from '../lib/ai-client.ts'
-import { SITES } from '../lib/config/sites.ts'
+import { SITES } from '../lib/data/sites.ts'
 import { ReportGenerator } from '../lib/report-generator.ts'
 import { ScreenCapturer } from '../lib/screen-capturer.ts'
 import { LocalStorage } from '../lib/storage/local-storage.ts'

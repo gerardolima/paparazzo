@@ -1,6 +1,6 @@
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm'
 import { AIClient } from '../lib/ai-client.ts'
-import { SITES } from '../lib/config/sites.ts'
+import { SITES } from '../lib/data/sites.ts'
 import { ReportGenerator } from '../lib/report-generator.ts'
 import { ScreenCapturer } from '../lib/screen-capturer.ts'
 import { S3Storage } from '../lib/storage/s3-storage.ts'

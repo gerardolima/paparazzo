@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, it, mock } from 'node:test'
-import type { Site } from './config/sites.ts'
+import type { Site } from './data/sites.ts'
 import { ReportGenerator } from './report-generator.ts'
 import type { Storage } from './storage/storage.ts'
 
@@ -39,13 +39,13 @@ const sites: Site[] = [
 
 describe('ReportGenerator', () => {
   const mockStorage: Storage = {
-    saveScreenshot: mock.fn(async () => {}),
-    saveText: mock.fn(async () => {}),
+    saveScreenshot: mock.fn(async () => { }),
+    saveText: mock.fn(async () => { }),
     listEntries: mock.fn(async () => []),
   }
 
   beforeEach(() => {
-    ;(mockStorage.listEntries as unknown as MockFn).mock.mockImplementation(async () => [
+    ; (mockStorage.listEntries as unknown as MockFn).mock.mockImplementation(async () => [
       'efe-esp.png',
       'efe-esp.md',
       'ansa-ita.png',
@@ -55,8 +55,8 @@ describe('ReportGenerator', () => {
   })
 
   afterEach(() => {
-    ;(mockStorage.saveText as unknown as MockFn).mock.resetCalls()
-    ;(mockStorage.listEntries as unknown as MockFn).mock.resetCalls()
+    ; (mockStorage.saveText as unknown as MockFn).mock.resetCalls()
+      ; (mockStorage.listEntries as unknown as MockFn).mock.resetCalls()
   })
 
   describe('generate', () => {
@@ -96,7 +96,7 @@ describe('ReportGenerator', () => {
     })
 
     it('generates HTML with no cards when entry list is empty', async () => {
-      ;(mockStorage.listEntries as unknown as MockFn).mock.mockImplementation(async () => [])
+      ; (mockStorage.listEntries as unknown as MockFn).mock.mockImplementation(async () => [])
 
       const generator = new ReportGenerator(mockStorage)
       await generator.generate('2024-01-01', sites)
@@ -108,7 +108,7 @@ describe('ReportGenerator', () => {
     })
 
     it('omits "View Translated Text" link when screenshot has no matching markdown', async () => {
-      ;(mockStorage.listEntries as unknown as MockFn).mock.mockImplementation(async () => ['ansa-ita.png'])
+      ; (mockStorage.listEntries as unknown as MockFn).mock.mockImplementation(async () => ['ansa-ita.png'])
 
       const generator = new ReportGenerator(mockStorage)
       await generator.generate('2024-01-01', sites)

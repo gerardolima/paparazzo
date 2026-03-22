@@ -1,4 +1,4 @@
-import type { Site } from './config/sites.ts'
+import type { Site } from './data/sites.ts'
 import type { Storage } from './storage/storage.ts'
 
 export class ReportGenerator {

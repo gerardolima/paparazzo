@@ -1,17 +1,17 @@
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, it, mock } from 'node:test'
 import type { AIClient } from './ai-client.ts'
-import type { Site } from './config/sites.ts'
+import type { Site } from './data/sites.ts'
 import type { Storage } from './storage/storage.ts'
 
 // biome-ignore lint/suspicious/noExplicitAny: helper for node:test mock type casting
 type MockFn = ReturnType<typeof mock.fn> & { mock: any }
 
 const mockPage = {
-  route: mock.fn(async () => {}),
-  setViewportSize: mock.fn(async () => {}),
-  goto: mock.fn(async () => {}),
-  locator: mock.fn(() => ({ count: async () => 0, first: () => ({ click: async () => {} }) })),
+  route: mock.fn(async () => { }),
+  setViewportSize: mock.fn(async () => { }),
+  goto: mock.fn(async () => { }),
+  locator: mock.fn(() => ({ count: async () => 0, first: () => ({ click: async () => { } }) })),
   screenshot: mock.fn(async () => Buffer.from('fake-png')),
 }
 
@@ -19,7 +19,7 @@ const mockContext = { newPage: mock.fn(async () => mockPage) }
 
 const mockBrowser = {
   newContext: mock.fn(async () => mockContext),
-  close: mock.fn(async () => {}),
+  close: mock.fn(async () => { }),
 }
 
 const mockChromium = { launch: mock.fn(async () => mockBrowser) }
@@ -41,8 +41,8 @@ const testSite: Site = {
 
 describe('ScreenCapturer', () => {
   const mockStorage: Storage = {
-    saveScreenshot: mock.fn(async () => {}),
-    saveText: mock.fn(async () => {}),
+    saveScreenshot: mock.fn(async () => { }),
+    saveText: mock.fn(async () => { }),
     listEntries: mock.fn(async () => []),
   }
 
@@ -52,18 +52,18 @@ describe('ScreenCapturer', () => {
 
   beforeEach(() => {
     mockPage.screenshot.mock.mockImplementation(async () => Buffer.from('fake-png'))
-    ;(mockStructurer.structureAndTranslate as unknown as MockFn).mock.mockImplementation(
-      async () => '# Translated headlines',
-    )
+      ; (mockStructurer.structureAndTranslate as unknown as MockFn).mock.mockImplementation(
+        async () => '# Translated headlines',
+      )
   })
 
   afterEach(() => {
     mockChromium.launch.mock.resetCalls()
     mockBrowser.close.mock.resetCalls()
     mockPage.route.mock.resetCalls()
-    ;(mockStorage.saveScreenshot as unknown as MockFn).mock.resetCalls()
-    ;(mockStorage.saveText as unknown as MockFn).mock.resetCalls()
-    ;(mockStructurer.structureAndTranslate as unknown as MockFn).mock.resetCalls()
+      ; (mockStorage.saveScreenshot as unknown as MockFn).mock.resetCalls()
+      ; (mockStorage.saveText as unknown as MockFn).mock.resetCalls()
+      ; (mockStructurer.structureAndTranslate as unknown as MockFn).mock.resetCalls()
   })
 
   describe('capture', () => {
@@ -125,7 +125,7 @@ describe('ScreenCapturer', () => {
     })
 
     it('closes browser even when AI structurer throws', async () => {
-      ;(mockStructurer.structureAndTranslate as unknown as MockFn).mock.mockImplementation(async () => {
+      ; (mockStructurer.structureAndTranslate as unknown as MockFn).mock.mockImplementation(async () => {
         throw new Error('AI service unavailable')
       })
 

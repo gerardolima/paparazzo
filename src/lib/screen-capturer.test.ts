@@ -3,7 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { after, before, describe, it, mock } from 'node:test'
 import { AIClient } from './ai-client.ts'
-import type { Site } from './config/sites.ts'
+import type { Site } from './data/sites.ts'
 import { ScreenCapturer } from './screen-capturer.ts'
 import { LocalStorage } from './storage/local-storage.ts'
 
