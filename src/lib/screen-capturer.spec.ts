@@ -45,7 +45,9 @@ describe('ScreenCapturer', () => {
   } as const satisfies Storage
 
   const mockAIClient = {
-    structureAndTranslate: mock.fn(async (_screenshotBuffer: Buffer, _country: string) => '<h2>Translated headlines</h2>'),
+    structureAndTranslate: mock.fn(
+      async (_screenshotBuffer: Buffer, _country: string) => '<h2>Translated headlines</h2>',
+    ),
   } as const satisfies AIClient
 
   beforeEach(() => {

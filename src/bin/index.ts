@@ -21,9 +21,11 @@ async function run() {
 
   const enabledSites = SITES.filter((s) => s.enabled)
 
-  for (const site of enabledSites) {
+  const total = enabledSites.length
+  for (let i = 0; i < total; i++) {
+    const site = enabledSites[i]
     try {
-      console.log(`Processing ${site.name} (${site.version})...`)
+      console.log(`${i + 1} / ${total} Processing ${site.name} (${site.version})...`)
       await capturer.capture(site, dateStr)
     } catch (error) {
       console.error(`Failed to process ${site.name} (${site.version}):`, error)

@@ -120,7 +120,7 @@ describe('ReportGenerator', () => {
       assert.ok(calledWith.includes('2024-01-01/lusa-eng.md'))
     })
 
-    it('renders card without extracted text when no markdown exists', async () => {
+    it('renders empty extracted text div when no markdown exists', async () => {
       const generator = new ReportGenerator(mockStorage)
       await generator.generate('2024-01-01', sites)
 
@@ -131,10 +131,11 @@ describe('ReportGenerator', () => {
       const ansaCardStart = html.indexOf('ANSA - Original')
       assert.ok(ansaCardStart !== -1, 'ANSA card header exists')
 
-      // Get the ANSA card HTML (up to the next card or end of section)
+      // The extracted-text div is present but empty
       const nextCardStart = html.indexOf('<div class="card">', ansaCardStart)
-      const ansaCard = nextCardStart !== -1 ? html.substring(ansaCardStart, nextCardStart) : html.substring(ansaCardStart)
-      assert.ok(!ansaCard.includes('extracted-text'))
+      const ansaCard =
+        nextCardStart !== -1 ? html.substring(ansaCardStart, nextCardStart) : html.substring(ansaCardStart)
+      assert.ok(ansaCard.includes('<div class="extracted-text"></div>'))
     })
 
     it('renders country section headers', async () => {
