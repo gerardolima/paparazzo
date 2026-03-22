@@ -8,12 +8,11 @@ const s3Mock = mockClient(S3Client)
 
 describe('S3Storage', () => {
   const bucket = 'test-bucket'
-  const region = 'us-east-1'
   let storage: S3Storage
 
   beforeEach(() => {
     s3Mock.reset()
-    storage = new S3Storage(bucket, region)
+    storage = new S3Storage(bucket)
   })
 
   it('saves a screenshot to S3', async () => {
