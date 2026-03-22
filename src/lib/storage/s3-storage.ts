@@ -44,7 +44,7 @@ export class S3Storage implements Storage {
         Key: key,
       }),
     )
-    return response.Body!.transformToString('utf-8')
+    return response.Body?.transformToString('utf-8') ?? ''
   }
 
   async listEntries(dateStr: string): Promise<string[]> {

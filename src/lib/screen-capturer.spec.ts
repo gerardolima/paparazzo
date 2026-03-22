@@ -5,7 +5,7 @@ import type { AIClient } from './ia-client/ai-client.ts'
 import type { Storage } from './storage/storage.ts'
 
 const mockPage = {
-  route: mock.fn(async (_url: string, _handler: Function) => {}),
+  route: mock.fn(async (_url: string, _handler: (_: string) => void) => {}),
   setViewportSize: mock.fn(async () => {}),
   goto: mock.fn(async () => {}),
   locator: mock.fn(() => ({ count: async () => 0, first: () => ({ click: async () => {} }) })),
