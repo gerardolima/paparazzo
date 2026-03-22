@@ -5,16 +5,16 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
  * structured, translated Markdown content based on the visual layout.
  */
 export class AIClient {
-  private readonly genAI: GoogleGenerativeAI
+  readonly #genAI: GoogleGenerativeAI
 
   constructor(apiKey: string) {
-    this.genAI = new GoogleGenerativeAI(apiKey)
+    this.#genAI = new GoogleGenerativeAI(apiKey)
   }
 
   async structureAndTranslate(screenshotBuffer: Buffer, country: string): Promise<string> {
     // const model = 'gemini-flash-latest'
     const model = 'models/gemini-3.1-flash-lite-preview'
-    const ai = this.genAI.getGenerativeModel({ model })
+    const ai = this.#genAI.getGenerativeModel({ model })
 
     const prompt = `
       Act as a news editor. Analyze the provided screenshot of a news website.

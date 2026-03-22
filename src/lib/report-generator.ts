@@ -2,14 +2,14 @@ import type { Site } from './data/sites.ts'
 import type { Storage } from './storage/storage.ts'
 
 export class ReportGenerator {
-  private readonly storage: Storage
+  readonly #storage: Storage
 
   constructor(storage: Storage) {
-    this.storage = storage
+    this.#storage = storage
   }
 
   async generate(dateStr: string, sites: Site[]): Promise<void> {
-    const files = await this.storage.listEntries(dateStr)
+    const files = await this.#storage.listEntries(dateStr)
     const screenshots = files.filter((f) => f.endsWith('.png'))
 
     const slugToSite = new Map<string, Site>()
@@ -89,6 +89,6 @@ export class ReportGenerator {
 </body>
 </html>`
 
-    await this.storage.saveText(`${dateStr}/index.html`, html)
+    await this.#storage.saveText(`${dateStr}/index.html`, html)
   }
 }

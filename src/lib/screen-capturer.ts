@@ -15,12 +15,12 @@ const BLOCKED_DOMAINS = [
 ]
 
 export class ScreenCapturer {
-  private readonly storage: Storage
-  private readonly structurer: AIClient
+  readonly #storage: Storage
+  readonly #aiClient: AIClient
 
-  constructor(storage: Storage, structurer: AIClient) {
-    this.storage = storage
-    this.structurer = structurer
+  constructor(storage: Storage, aiClient: AIClient) {
+    this.#storage = storage
+    this.#aiClient = aiClient
   }
 
   async capture(site: Site, dateStr: string): Promise<void> {
@@ -76,7 +76,7 @@ export class ScreenCapturer {
         await acceptButtons
           .first()
           .click({ timeout: 5000 })
-          .catch(() => { })
+          .catch(() => {})
 
         acceptButtons = page.locator(locators)
       }
@@ -85,13 +85,13 @@ export class ScreenCapturer {
       // --------------------------------------------------------------------------------------------------------
       console.log(`  saving image...`)
       const screenshotBuffer = await page.screenshot({ fullPage: true })
-      await this.storage.saveScreenshot(`${dateStr}/${site.slug}.png`, screenshotBuffer)
+      await this.#storage.saveScreenshot(`${dateStr}/${site.slug}.png`, screenshotBuffer)
 
       // extract text using AI
       // --------------------------------------------------------------------------------------------------------
       console.log(`  extracting text...`)
-      const structuredMarkdown = await this.structurer.structureAndTranslate(screenshotBuffer, site.country)
-      await this.storage.saveText(`${dateStr}/${site.slug}.md`, structuredMarkdown)
+      const structuredMarkdown = await this.#aiClient.structureAndTranslate(screenshotBuffer, site.country)
+      await this.#storage.saveText(`${dateStr}/${site.slug}.md`, structuredMarkdown)
     } finally {
       await browser.close()
     }

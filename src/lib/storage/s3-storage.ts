@@ -2,21 +2,21 @@ import { ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/clien
 import type { Storage } from './storage.ts'
 
 export class S3Storage implements Storage {
-  private client: S3Client
-  private bucket: string
-  private prefix: string
+  readonly #client: S3Client
+  readonly #bucket: string
+  readonly #prefix: string
 
   constructor(bucket: string, prefix: string = 'media/') {
-    this.client = new S3Client()
-    this.bucket = bucket
-    this.prefix = prefix
+    this.#client = new S3Client()
+    this.#bucket = bucket
+    this.#prefix = prefix
   }
 
   async saveScreenshot(filename: string, data: Buffer): Promise<void> {
-    const key = `${this.prefix}${filename}`
-    await this.client.send(
+    const key = `${this.#prefix}${filename}`
+    await this.#client.send(
       new PutObjectCommand({
-        Bucket: this.bucket,
+        Bucket: this.#bucket,
         Key: key,
         Body: data,
         ContentType: 'image/png',
@@ -25,10 +25,10 @@ export class S3Storage implements Storage {
   }
 
   async saveText(filename: string, content: string): Promise<void> {
-    const key = `${this.prefix}${filename}`
-    await this.client.send(
+    const key = `${this.#prefix}${filename}`
+    await this.#client.send(
       new PutObjectCommand({
-        Bucket: this.bucket,
+        Bucket: this.#bucket,
         Key: key,
         Body: content,
         ContentType: filename.endsWith('.html') ? 'text/html' : 'text/markdown',
@@ -37,13 +37,13 @@ export class S3Storage implements Storage {
   }
 
   async listEntries(dateStr: string): Promise<string[]> {
-    const prefix = `${this.prefix}${dateStr}/`
+    const prefix = `${this.#prefix}${dateStr}/`
     const command = new ListObjectsV2Command({
-      Bucket: this.bucket,
+      Bucket: this.#bucket,
       Prefix: prefix,
     })
 
-    const response = await this.client.send(command)
+    const response = await this.#client.send(command)
 
     if (!response.Contents) {
       return []

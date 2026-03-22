@@ -8,10 +8,10 @@ import type { Storage } from './storage/storage.ts'
 type MockFn = ReturnType<typeof mock.fn> & { mock: any }
 
 const mockPage = {
-  route: mock.fn(async () => { }),
-  setViewportSize: mock.fn(async () => { }),
-  goto: mock.fn(async () => { }),
-  locator: mock.fn(() => ({ count: async () => 0, first: () => ({ click: async () => { } }) })),
+  route: mock.fn(async () => {}),
+  setViewportSize: mock.fn(async () => {}),
+  goto: mock.fn(async () => {}),
+  locator: mock.fn(() => ({ count: async () => 0, first: () => ({ click: async () => {} }) })),
   screenshot: mock.fn(async () => Buffer.from('fake-png')),
 }
 
@@ -19,7 +19,7 @@ const mockContext = { newPage: mock.fn(async () => mockPage) }
 
 const mockBrowser = {
   newContext: mock.fn(async () => mockContext),
-  close: mock.fn(async () => { }),
+  close: mock.fn(async () => {}),
 }
 
 const mockChromium = { launch: mock.fn(async () => mockBrowser) }
@@ -41,8 +41,8 @@ const testSite: Site = {
 
 describe('ScreenCapturer', () => {
   const mockStorage: Storage = {
-    saveScreenshot: mock.fn(async () => { }),
-    saveText: mock.fn(async () => { }),
+    saveScreenshot: mock.fn(async () => {}),
+    saveText: mock.fn(async () => {}),
     listEntries: mock.fn(async () => []),
   }
 
@@ -52,18 +52,18 @@ describe('ScreenCapturer', () => {
 
   beforeEach(() => {
     mockPage.screenshot.mock.mockImplementation(async () => Buffer.from('fake-png'))
-      ; (mockStructurer.structureAndTranslate as unknown as MockFn).mock.mockImplementation(
-        async () => '# Translated headlines',
-      )
+    ;(mockStructurer.structureAndTranslate as unknown as MockFn).mock.mockImplementation(
+      async () => '# Translated headlines',
+    )
   })
 
   afterEach(() => {
     mockChromium.launch.mock.resetCalls()
     mockBrowser.close.mock.resetCalls()
     mockPage.route.mock.resetCalls()
-      ; (mockStorage.saveScreenshot as unknown as MockFn).mock.resetCalls()
-      ; (mockStorage.saveText as unknown as MockFn).mock.resetCalls()
-      ; (mockStructurer.structureAndTranslate as unknown as MockFn).mock.resetCalls()
+    ;(mockStorage.saveScreenshot as unknown as MockFn).mock.resetCalls()
+    ;(mockStorage.saveText as unknown as MockFn).mock.resetCalls()
+    ;(mockStructurer.structureAndTranslate as unknown as MockFn).mock.resetCalls()
   })
 
   describe('capture', () => {
@@ -118,14 +118,15 @@ describe('ScreenCapturer', () => {
       const capturer = new ScreenCapturer(mockStorage, mockStructurer)
       await capturer.capture(testSite, '2024-06-15')
 
-      assert.equal(mockPage.route.mock.callCount(), 1)
-      assert.equal(mockPage.route.mock.calls[0].arguments[0], '**/*')
-      assert.equal(typeof mockPage.route.mock.calls[0].arguments[1], 'function')
+      const routeFn = mockPage.route as unknown as MockFn
+      assert.equal(routeFn.mock.callCount(), 1)
+      assert.equal(routeFn.mock.calls[0].arguments[0], '**/*')
+      assert.equal(typeof routeFn.mock.calls[0].arguments[1], 'function')
       assert.deepEqual(callOrder, ['route', 'goto'])
     })
 
     it('closes browser even when AI structurer throws', async () => {
-      ; (mockStructurer.structureAndTranslate as unknown as MockFn).mock.mockImplementation(async () => {
+      ;(mockStructurer.structureAndTranslate as unknown as MockFn).mock.mockImplementation(async () => {
         throw new Error('AI service unavailable')
       })
 

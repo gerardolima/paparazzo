@@ -25,10 +25,11 @@ mock.module('../lib/storage/s3-storage.ts', {
 mock.module('../lib/ai-client.ts', {
   namedExports: { AIClient: class {} },
 })
-mock.module('../lib/config/sites.ts', {
+mock.module('../lib/data/sites.ts', {
   namedExports: {
     SITES: [
       {
+        slug: 'site1',
         name: 'Site1',
         description: 'Desc',
         country: 'CountryA',
@@ -37,6 +38,7 @@ mock.module('../lib/config/sites.ts', {
         enabled: true,
       },
       {
+        slug: 'site2-eng',
         name: 'Site2',
         description: null,
         country: 'CountryB',
@@ -45,6 +47,7 @@ mock.module('../lib/config/sites.ts', {
         enabled: true,
       },
       {
+        slug: 'site3',
         name: 'Site3',
         description: 'Disabled',
         country: 'CountryC',
