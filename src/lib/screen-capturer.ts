@@ -1,3 +1,4 @@
+import { setTimeout } from 'node:timers/promises'
 import { chromium } from 'playwright'
 import type { AIClient } from './ai-client.ts'
 import type { Site } from './config/sites.ts'
@@ -33,33 +34,40 @@ export class ScreenCapturer {
       await page.setViewportSize({ width: 1440, height: 900 })
       await page.goto(site.url, { waitUntil: 'domcontentloaded', timeout: 30_000 })
 
-      // Auto-dismiss common cookie banners (basic heuristic)
-      console.log(`  dismissing grdp banners...`)
-      const acceptButtons = page.locator(
-        'button:has-text("Accept"), button:has-text("Agree"), button:has-text("I Accept"), button:has-text("Confirm")',
-      )
-      if ((await acceptButtons.count()) > 0) {
+      // dismiss banners (basic heuristic)
+      // --------------------------------------------------------------------------------------------------------
+      console.log(`  dismissing banners...`)
+
+      let counter = 0
+      const locators = [
+        'button:has-text("Autoriser tous les cookies")', // https://www.afp.com/
+        'button:has-text("ACCETTA E CONTINUA")', // https://www.ansa.it/
+        'button:has-text("Prano të gjitha")', // https://kosovapress.com/
+        'div.closeSubscribPopUp', // https://kosovapress.com/
+        'button:has-text("OK")', // https://www.ntb.no/
+        'button:has-text("Tillåt alla")', // https://tt.se/
+        '#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll', // many
+      ].join()
+
+      let acceptButtons = page.locator(locators)
+      while ((await acceptButtons.count()) > 0 && counter < 5) {
+        counter++
         await acceptButtons
           .first()
-          .click({ timeout: 2000 })
+          .click({ timeout: 5000 })
           .catch(() => {})
+
+        acceptButtons = page.locator(locators)
       }
 
-      // Auto-dismiss common cookie banners (basic heuristic)
-      const okButton = page.locator('button:has-text("OK")')
-      if ((await okButton.count()) > 0) {
-        await okButton
-          .first()
-          .click({ timeout: 2000 })
-          .catch(() => {})
-      }
-
-      // handle image
+      // save image
+      // --------------------------------------------------------------------------------------------------------
       console.log(`  saving image...`)
       const screenshotBuffer = await page.screenshot({ fullPage: true })
       await this.storage.saveScreenshot(`${dateStr}/${slug}.png`, screenshotBuffer)
 
-      // handle text via AI
+      // extract text using AI
+      // --------------------------------------------------------------------------------------------------------
       console.log(`  extracting text...`)
       const structuredMarkdown = await this.structurer.structureAndTranslate(screenshotBuffer, site.country)
       await this.storage.saveText(`${dateStr}/${slug}.md`, structuredMarkdown)

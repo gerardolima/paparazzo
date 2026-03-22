@@ -21,7 +21,7 @@ export const SITES: Site[] = [
     description: 'Agence FrancePresse',
     country: 'França',
     version: 'original',
-    url: 'http://www.afp.com',
+    url: 'https://www.afp.com',
     enabled: true,
   },
   {
