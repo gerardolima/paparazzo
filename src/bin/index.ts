@@ -1,4 +1,4 @@
-import { AIStructurer } from '../lib/ai-structurer.ts'
+import { AIClient } from '../lib/ai-client.ts'
 import { SITES } from '../lib/config/sites.ts'
 import { ReportGenerator } from '../lib/report-generator.ts'
 import { ScreenCapturer } from '../lib/screen-capturer.ts'
@@ -13,8 +13,8 @@ async function run() {
 
   const dateStr = new Date().toISOString().split('T')[0]
   const storage = new LocalStorage()
-  const ai = new AIStructurer(apiKey)
-  const capturer = new ScreenCapturer(storage, ai)
+  const aiClient = new AIClient(apiKey)
+  const capturer = new ScreenCapturer(storage, aiClient)
   const generator = new ReportGenerator(storage)
 
   console.log(`Starting Paparazzo for ${dateStr}...`)

@@ -1,12 +1,12 @@
 import { chromium } from 'playwright'
-import type { AIStructurer } from './ai-structurer.ts'
+import type { AIClient } from './ai-client.ts'
 import type { Storage } from './storage/storage.ts'
 
 export class ScreenCapturer {
   private readonly storage: Storage
-  private readonly structurer: AIStructurer
+  private readonly structurer: AIClient
 
-  constructor(storage: Storage, structurer: AIStructurer) {
+  constructor(storage: Storage, structurer: AIClient) {
     this.storage = storage
     this.structurer = structurer
   }

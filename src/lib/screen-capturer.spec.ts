@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, it, mock } from 'node:test'
-import type { AIStructurer } from './ai-structurer.ts'
+import type { AIClient } from './ai-client.ts'
 import type { Storage } from './storage/storage.ts'
 
 // biome-ignore lint/suspicious/noExplicitAny: helper for node:test mock type casting
@@ -36,7 +36,7 @@ describe('ScreenCapturer', () => {
 
   const mockStructurer = {
     structureAndTranslate: mock.fn(async () => '# Translated headlines'),
-  } as unknown as AIStructurer
+  } as unknown as AIClient
 
   beforeEach(() => {
     mockPage.screenshot.mock.mockImplementation(async () => Buffer.from('fake-png'))

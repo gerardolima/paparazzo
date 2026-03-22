@@ -22,8 +22,8 @@ mock.module('../lib/report-generator.ts', {
 mock.module('../lib/storage/s3-storage.ts', {
   namedExports: { S3Storage: class {} },
 })
-mock.module('../lib/ai-structurer.ts', {
-  namedExports: { AIStructurer: class {} },
+mock.module('../lib/ai-client.ts', {
+  namedExports: { AIClient: class {} },
 })
 mock.module('@aws-sdk/client-ssm', {
   namedExports: {
