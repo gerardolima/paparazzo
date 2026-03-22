@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, it, mock } from 'node:test'
 
-const mockCapture = mock.fn(async () => { })
-const mockGenerate = mock.fn(async () => { })
+const mockCapture = mock.fn(async () => {})
+const mockGenerate = mock.fn(async () => {})
 const mockSsmSend = mock.fn(async () => ({ Parameter: { Value: 'test-api-key' } }))
 
 mock.module('../lib/screen-capturer.ts', {
@@ -20,17 +20,17 @@ mock.module('../lib/report-generator.ts', {
   },
 })
 mock.module('../lib/storage/s3-storage.ts', {
-  namedExports: { S3Storage: class { } },
+  namedExports: { S3Storage: class {} },
 })
 mock.module('../lib/ai-structurer.ts', {
-  namedExports: { AIStructurer: class { } },
+  namedExports: { AIStructurer: class {} },
 })
 mock.module('@aws-sdk/client-ssm', {
   namedExports: {
     SSMClient: class {
       send = mockSsmSend
     },
-    GetParameterCommand: class { },
+    GetParameterCommand: class {},
   },
 })
 
@@ -42,8 +42,8 @@ describe('handler', () => {
   beforeEach(() => {
     process.env.SSM_API_KEY_NAME = '/paparazzo/google-api-key'
     process.env.S3_BUCKET = 'test-bucket'
-    mockCapture.mock.mockImplementation(async () => { })
-    mockGenerate.mock.mockImplementation(async () => { })
+    mockCapture.mock.mockImplementation(async () => {})
+    mockGenerate.mock.mockImplementation(async () => {})
     mockSsmSend.mock.mockImplementation(async () => ({ Parameter: { Value: 'test-api-key' } }))
   })
 

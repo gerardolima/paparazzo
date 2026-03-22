@@ -28,10 +28,9 @@ export class PaparazzoStack extends cdk.Stack {
     })
 
     const fn = new lambda.DockerImageFunction(this, 'PaparazzoLambda', {
-      code: lambda.DockerImageCode.fromImageAsset(
-        path.join(path.dirname(url.fileURLToPath(import.meta.url)), '..'),
-        { file: 'Dockerfile' },
-      ),
+      code: lambda.DockerImageCode.fromImageAsset(path.join(path.dirname(url.fileURLToPath(import.meta.url)), '..'), {
+        file: 'Dockerfile',
+      }),
       architecture: lambda.Architecture.ARM_64,
       memorySize: 2048,
       timeout: cdk.Duration.minutes(15),

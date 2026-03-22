@@ -19,8 +19,12 @@ export const handler = async () => {
   }
 
   const { Parameter } = await ssm.send(
-    new GetParameterCommand({ Name: ssmParamName, WithDecryption: true }),
+    new GetParameterCommand({
+      Name: ssmParamName,
+      WithDecryption: true,
+    }),
   )
+
   const apiKey = Parameter?.Value
   if (!apiKey) {
     throw new Error(`SSM parameter ${ssmParamName} not found or empty`)
