@@ -1,5 +1,4 @@
 import type { Site } from './config/sites.ts'
-import { siteSlug } from './config/sites.ts'
 import type { Storage } from './storage/storage.ts'
 
 export class ReportGenerator {
@@ -15,7 +14,7 @@ export class ReportGenerator {
 
     const slugToSite = new Map<string, Site>()
     for (const site of sites) {
-      slugToSite.set(siteSlug(site), site)
+      slugToSite.set(site.slug, site)
     }
 
     // Group screenshots by country

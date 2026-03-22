@@ -14,6 +14,7 @@ describe('ReportGenerator (INTEGRATION)', () => {
 
   const sites: Site[] = [
     {
+      slug: 'test1',
       name: 'Test1',
       description: 'First agency',
       country: 'CountryA',
@@ -22,6 +23,7 @@ describe('ReportGenerator (INTEGRATION)', () => {
       enabled: true,
     },
     {
+      slug: 'test2',
       name: 'Test2',
       description: null,
       country: 'CountryB',

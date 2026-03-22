@@ -26,6 +26,7 @@ describe('ScreenCapturer (INTEGRATION)', () => {
   const capturer = new ScreenCapturer(adapter, structurer)
 
   const testSite: Site = {
+    slug: 'efe-esp',
     name: 'EFE',
     description: 'Agencia EFE',
     country: 'Espanha',
@@ -48,7 +49,7 @@ describe('ScreenCapturer (INTEGRATION)', () => {
     })
 
     it('captures a screenshot of a real webpage', async () => {
-      const screenshotPath = path.join(testDir, '2024-01-01', 'efe.png')
+      const screenshotPath = path.join(testDir, '2024-01-01', 'efe-esp.png')
       const stat = await fs.stat(screenshotPath)
 
       assert.ok(stat.isFile())
@@ -56,7 +57,7 @@ describe('ScreenCapturer (INTEGRATION)', () => {
     })
 
     it('extracts text from a real webpage', async () => {
-      const textPath = path.join(testDir, '2024-01-01', 'efe.md')
+      const textPath = path.join(testDir, '2024-01-01', 'efe-esp.md')
       const textStat = await fs.stat(textPath)
       assert.ok(textStat.isFile())
       const content = await fs.readFile(textPath, 'utf8')

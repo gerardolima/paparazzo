@@ -1,4 +1,5 @@
 export type Site = {
+  slug: string
   name: string
   description: string | null
   country: string
@@ -7,16 +8,27 @@ export type Site = {
   enabled: boolean
 }
 
-export function siteSlug(site: Site): string {
-  const base = site.name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-  return site.version === 'english' ? `${base}-english` : base
-}
-
 export const SITES: Site[] = [
   {
+    slug: 'aa-tur',
+    name: 'AA',
+    description: 'Anadolu Agency',
+    country: 'Turquia',
+    version: 'original',
+    url: 'https://www.aa.com.tr/',
+    enabled: true,
+  },
+  {
+    slug: 'aa-eng',
+    name: 'AA',
+    description: 'Anadolu Agency',
+    country: 'Turquia',
+    version: 'english',
+    url: 'https://www.aa.com.tr/en',
+    enabled: true,
+  },
+  {
+    slug: 'afp-fra',
     name: 'AFP',
     description: 'Agence FrancePresse',
     country: 'França',
@@ -25,6 +37,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'agerpres-ron',
     name: 'Agerpres',
     description: 'Agenția Națională de Presă',
     country: 'Roménia',
@@ -33,6 +46,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'agerpres-eng',
     name: 'Agerpres',
     description: 'Agenția Națională de Presă',
     country: 'Roménia',
@@ -41,22 +55,16 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
-    name: 'Albanian Telegraphic Agency',
-    description: 'ATA/ATSH',
-    country: 'Albânia',
-    version: 'original',
-    url: 'https://ata.gov.al/',
-    enabled: true,
-  },
-  {
-    name: 'Albanian Telegraphic Agency',
-    description: 'ATA/ATSH',
-    country: 'Albânia',
+    slug: 'amna-eng',
+    name: 'AMNA',
+    description: 'AthensMacedonian News Agency',
+    country: 'Grécia',
     version: 'english',
-    url: 'https://en.ata.gov.al/',
+    url: 'https://www.amna.gr/en',
     enabled: true,
   },
   {
+    slug: 'ana-cat',
     name: 'ANA',
     description: 'Agència de Notícies Andorrana',
     country: 'Andorra',
@@ -65,23 +73,8 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
-    name: 'Anadolu Ajansi',
-    description: 'Anadolu Agency',
-    country: 'Turquia',
-    version: 'original',
-    url: 'https://www.aa.com.tr/',
-    enabled: true,
-  },
-  {
-    name: 'Anadolu Ajansi',
-    description: 'Anadolu Agency',
-    country: 'Turquia',
-    version: 'english',
-    url: 'https://www.aa.com.tr/en',
-    enabled: true,
-  },
-  {
-    name: 'ANAMPA / AMNA',
+    slug: 'amna-ell',
+    name: 'ANAMPA',
     description: 'AthensMacedonian News Agency',
     country: 'Grécia',
     version: 'original',
@@ -89,14 +82,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
-    name: 'ANAMPA / AMNA',
-    description: 'AthensMacedonian News Agency',
-    country: 'Grécia',
-    version: 'english',
-    url: 'https://www.amna.gr/en',
-    enabled: true,
-  },
-  {
+    slug: 'anp-nld',
     name: 'ANP',
     description: 'Algemeen Nederlands Persbureau',
     country: 'Países Baixos',
@@ -105,6 +91,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'ansa-ita',
     name: 'ANSA',
     description: 'Agenzia Nazionale Stampa Associata',
     country: 'Itália',
@@ -113,6 +100,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'ansa-eng',
     name: 'ANSA',
     description: 'Agenzia Nazionale Stampa Associata',
     country: 'Itália',
@@ -121,6 +109,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'apa-deu',
     name: 'APA',
     description: 'Austria Press Agency',
     country: 'Áustria',
@@ -129,6 +118,25 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'ata-sqi',
+    name: 'ATA',
+    description: 'ATA/ATSH',
+    country: 'Albânia',
+    version: 'original',
+    url: 'https://ata.gov.al/',
+    enabled: true,
+  },
+  {
+    slug: 'ata-eng',
+    name: 'ATA',
+    description: 'ATA/ATSH',
+    country: 'Albânia',
+    version: 'english',
+    url: 'https://en.ata.gov.al/',
+    enabled: true,
+  },
+  {
+    slug: 'azertac-aze',
     name: 'AZERTAC',
     description: 'Azerbaijan State News Agency',
     country: 'Azerbeijão',
@@ -137,6 +145,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'azertac-eng',
     name: 'AZERTAC',
     description: 'Azerbaijan State News Agency',
     country: 'Azerbeijão',
@@ -145,14 +154,16 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
-    name: 'Belga News Agency',
-    description: null,
+    slug: 'belga-nld',
+    name: 'BELGA',
+    description: 'Belga News Agency',
     country: 'Bélgica',
     version: 'original',
     url: 'https://www.belga.be/home/',
     enabled: true,
   },
   {
+    slug: 'bta-bul',
     name: 'BTA',
     description: 'Bulgarian News Agency',
     country: 'Bulgária',
@@ -161,6 +172,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'bta-eng',
     name: 'BTA',
     description: 'Bulgarian News Agency',
     country: 'Bulgária',
@@ -169,6 +181,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'cna-eng',
     name: 'CNA',
     description: 'Cyprus News Agency',
     country: 'Chipre',
@@ -177,6 +190,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'čtk-ces',
     name: 'ČTK',
     description: 'Czech News Agency',
     country: 'República Checa',
@@ -185,6 +199,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'dpa-deu',
     name: 'DPA',
     description: 'Deutsche PresseAgentur',
     country: 'Alemanha',
@@ -193,6 +208,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'efe-esp',
     name: 'EFE',
     description: 'Agencia EFE',
     country: 'Espanha',
@@ -201,6 +217,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'efe-eng',
     name: 'EFE',
     description: 'Agencia EFE',
     country: 'Espanha',
@@ -209,6 +226,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'fena-bos',
     name: 'FENA',
     description: 'Federalna novinska agencija',
     country: 'Bósnia e Herzegovina',
@@ -217,6 +235,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'fena-eng',
     name: 'FENA',
     description: 'Federalna novinska agencija',
     country: 'Bósnia e Herzegovina',
@@ -225,6 +244,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'hina-hrv',
     name: 'HINA',
     description: 'Croatian News Agency',
     country: 'Croácia',
@@ -233,7 +253,8 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
-    name: 'KeystoneSDA / KeystoneATS',
+    slug: 'keystone-deu',
+    name: 'KEYSTONE',
     description: 'Swiss Telegraphic Agency',
     country: 'Suíça',
     version: 'original',
@@ -241,6 +262,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'kosovapress-sqi',
     name: 'KosovaPress',
     description: null,
     country: 'Kosovo',
@@ -249,6 +271,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'kosovapress-eng',
     name: 'KosovaPress',
     description: null,
     country: 'Kosovo',
@@ -257,14 +280,16 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
-    name: 'Latvijas nacionālā informācijas aģentūra',
-    description: null,
+    slug: 'leta-lav',
+    name: 'LETA',
+    description: 'Latvijas nacionālā informācijas aģentūra',
     country: 'Letónia',
     version: 'original',
     url: 'https://leta.lv/',
     enabled: true,
   },
   {
+    slug: 'lusa-por',
     name: 'Lusa',
     description: 'Agência de Notícias',
     country: 'Portugal',
@@ -273,6 +298,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'lusa-eng',
     name: 'Lusa',
     description: 'Agência de Notícias',
     country: 'Portugal',
@@ -281,6 +307,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'mti-hun',
     name: 'MTI',
     description: 'Magyar Távirati Iroda',
     country: 'Hungria',
@@ -289,6 +316,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'ntb-nor',
     name: 'NTB',
     description: 'Norwegian News Agency',
     country: 'Noruega',
@@ -297,14 +325,16 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
-    name: 'PA Media:Press Association',
-    description: null,
+    slug: 'pa-eng',
+    name: 'PA',
+    description: 'PA Media:Press Association',
     country: 'Reino Unido',
-    version: 'original',
+    version: 'english',
     url: 'https://pa.media/',
     enabled: true,
   },
   {
+    slug: 'pap-pol',
     name: 'PAP',
     description: 'Polska Agencja Prasowa',
     country: 'Polónia',
@@ -313,6 +343,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'pap-eng',
     name: 'PAP',
     description: 'Polska Agencja Prasowa',
     country: 'Polónia',
@@ -321,14 +352,16 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'ritzau-den',
     name: 'Ritzaus Bureau',
-    description: null,
+    description: 'Ritzaus Bureau',
     country: 'Dinamarca',
     version: 'original',
     url: 'https://ritzau.com/',
     enabled: true,
   },
   {
+    slug: 'sta-slv',
     name: 'STA',
     description: 'Slovenska Tiskovna Agencija',
     country: 'Eslovénia',
@@ -337,6 +370,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'sta-eng',
     name: 'STA',
     description: 'Slovenska Tiskovna Agencija',
     country: 'Eslovénia',
@@ -345,6 +379,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'stt-fin',
     name: 'STT',
     description: 'Finnish News Agency',
     country: 'Finlândia',
@@ -353,6 +388,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'tanjug-spr',
     name: 'Tanjug',
     description: null,
     country: 'Sérvia',
@@ -361,6 +397,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'tanjug-eng',
     name: 'Tanjug',
     description: null,
     country: 'Sérvia',
@@ -369,6 +406,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'tasr-svk',
     name: 'TASR',
     description: 'Tlačová agentúra Slovenskej republiky',
     country: 'Eslováquia',
@@ -377,6 +415,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'tasr-eng',
     name: 'TASR',
     description: 'Tlačová agentúra Slovenskej republiky',
     country: 'Eslováquia',
@@ -385,6 +424,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'tass-rus',
     name: 'TASS',
     description: 'Russian News Agency TASS',
     country: 'Rússia',
@@ -393,6 +433,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'tass-eng',
     name: 'TASS',
     description: 'Russian News Agency TASS',
     country: 'Rússia',
@@ -401,6 +442,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'tt-sve',
     name: 'TT',
     description: 'Tidningarnas Telegrambyrå / TT News Agency',
     country: 'Suécia',
@@ -409,6 +451,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'ukrinform-urk',
     name: 'Ukrinform',
     description: 'National News Agency of Ukraine',
     country: 'Ucrânia',
@@ -417,6 +460,7 @@ export const SITES: Site[] = [
     enabled: true,
   },
   {
+    slug: 'ukrinform-eng',
     name: 'Ukrinform',
     description: 'National News Agency of Ukraine',
     country: 'Ucrânia',

@@ -1,8 +1,18 @@
 import { chromium } from 'playwright'
 import type { AIClient } from './ai-client.ts'
 import type { Site } from './config/sites.ts'
-import { siteSlug } from './config/sites.ts'
 import type { Storage } from './storage/storage.ts'
+
+const BLOCKED_DOMAINS = [
+  'googlesyndication.com',
+  'google-analytics.com',
+  'googletagmanager.com',
+  'googleadservices.com',
+  'doubleclick.net',
+  'adtrafficquality.google',
+  'facebook.net',
+  'facebook.com/tr',
+]
 
 export class ScreenCapturer {
   private readonly storage: Storage
@@ -14,7 +24,6 @@ export class ScreenCapturer {
   }
 
   async capture(site: Site, dateStr: string): Promise<void> {
-    const slug = siteSlug(site)
     const browser = await chromium.launch({
       args: [
         '--no-sandbox',
@@ -23,12 +32,24 @@ export class ScreenCapturer {
         '--disable-gpu',
         '--no-zygote',
         '--single-process',
+        '--disable-extensions',
+        '--disable-background-networking',
+        '--disable-default-apps',
+        '--js-flags=--max-old-space-size=512',
       ],
     })
     const context = await browser.newContext()
     const page = await context.newPage()
 
     try {
+      await page.route('**/*', (route) => {
+        const reqUrl = route.request().url()
+        if (BLOCKED_DOMAINS.some((domain) => reqUrl.includes(domain))) {
+          return route.abort()
+        }
+        return route.continue()
+      })
+
       console.log(`  opening site: ${site.url}...`)
       await page.setViewportSize({ width: 1440, height: 900 })
       await page.goto(site.url, { waitUntil: 'domcontentloaded', timeout: 30_000 })
@@ -45,6 +66,7 @@ export class ScreenCapturer {
         'div.closeSubscribPopUp', // https://kosovapress.com/
         'button:has-text("OK")', // https://www.ntb.no/
         'button:has-text("Tillåt alla")', // https://tt.se/
+        'button:has-text("OK, acceptar totes")', // https://www.ana.ad/
         '#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll', // many
       ].join()
 
@@ -54,7 +76,7 @@ export class ScreenCapturer {
         await acceptButtons
           .first()
           .click({ timeout: 5000 })
-          .catch(() => {})
+          .catch(() => { })
 
         acceptButtons = page.locator(locators)
       }
@@ -63,13 +85,13 @@ export class ScreenCapturer {
       // --------------------------------------------------------------------------------------------------------
       console.log(`  saving image...`)
       const screenshotBuffer = await page.screenshot({ fullPage: true })
-      await this.storage.saveScreenshot(`${dateStr}/${slug}.png`, screenshotBuffer)
+      await this.storage.saveScreenshot(`${dateStr}/${site.slug}.png`, screenshotBuffer)
 
       // extract text using AI
       // --------------------------------------------------------------------------------------------------------
       console.log(`  extracting text...`)
       const structuredMarkdown = await this.structurer.structureAndTranslate(screenshotBuffer, site.country)
-      await this.storage.saveText(`${dateStr}/${slug}.md`, structuredMarkdown)
+      await this.storage.saveText(`${dateStr}/${site.slug}.md`, structuredMarkdown)
     } finally {
       await browser.close()
     }

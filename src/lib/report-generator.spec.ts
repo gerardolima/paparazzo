@@ -9,6 +9,7 @@ type MockFn = ReturnType<typeof mock.fn> & { mock: any }
 
 const sites: Site[] = [
   {
+    slug: 'efe-esp',
     name: 'EFE',
     description: 'Agencia EFE',
     country: 'Espanha',
@@ -17,6 +18,7 @@ const sites: Site[] = [
     enabled: true,
   },
   {
+    slug: 'ansa-ita',
     name: 'ANSA',
     description: 'Agenzia Nazionale Stampa Associata',
     country: 'Itália',
@@ -25,6 +27,7 @@ const sites: Site[] = [
     enabled: true,
   },
   {
+    slug: 'lusa-eng',
     name: 'Lusa',
     description: 'Agência de Notícias',
     country: 'Espanha',
@@ -43,11 +46,11 @@ describe('ReportGenerator', () => {
 
   beforeEach(() => {
     ;(mockStorage.listEntries as unknown as MockFn).mock.mockImplementation(async () => [
-      'efe.png',
-      'efe.md',
-      'ansa.png',
-      'lusa-english.png',
-      'lusa-english.md',
+      'efe-esp.png',
+      'efe-esp.md',
+      'ansa-ita.png',
+      'lusa-eng.png',
+      'lusa-eng.md',
     ])
   })
 
@@ -66,9 +69,9 @@ describe('ReportGenerator', () => {
 
       const [filename, html] = saveTextFn.mock.calls[0].arguments as [string, string]
       assert.equal(filename, '2024-01-01/index.html')
-      assert.ok(html.includes('efe.png'))
-      assert.ok(html.includes('ansa.png'))
-      assert.ok(html.includes('lusa-english.png'))
+      assert.ok(html.includes('efe-esp.png'))
+      assert.ok(html.includes('ansa-ita.png'))
+      assert.ok(html.includes('lusa-eng.png'))
       assert.ok(html.includes('View Translated Text'))
     })
 
@@ -105,7 +108,7 @@ describe('ReportGenerator', () => {
     })
 
     it('omits "View Translated Text" link when screenshot has no matching markdown', async () => {
-      ;(mockStorage.listEntries as unknown as MockFn).mock.mockImplementation(async () => ['ansa.png'])
+      ;(mockStorage.listEntries as unknown as MockFn).mock.mockImplementation(async () => ['ansa-ita.png'])
 
       const generator = new ReportGenerator(mockStorage)
       await generator.generate('2024-01-01', sites)
