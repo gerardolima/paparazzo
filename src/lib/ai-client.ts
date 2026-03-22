@@ -11,13 +11,14 @@ export class AIClient {
     this.genAI = new GoogleGenerativeAI(apiKey)
   }
 
-  async structureAndTranslate(screenshotBuffer: Buffer): Promise<string> {
+  async structureAndTranslate(screenshotBuffer: Buffer, country: string): Promise<string> {
     // const model = 'gemini-flash-latest'
     const model = 'models/gemini-3.1-flash-lite-preview'
     const ai = this.genAI.getGenerativeModel({ model })
 
     const prompt = `
       Act as a news editor. Analyze the provided screenshot of a news website.
+      The website is from ${country}.
 
       Tasks:
       1. Extract all significant news headlines and summaries.

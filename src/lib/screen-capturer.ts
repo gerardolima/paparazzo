@@ -1,5 +1,7 @@
 import { chromium } from 'playwright'
 import type { AIClient } from './ai-client.ts'
+import type { Site } from './config/sites.ts'
+import { siteSlug } from './config/sites.ts'
 import type { Storage } from './storage/storage.ts'
 
 export class ScreenCapturer {
@@ -11,7 +13,8 @@ export class ScreenCapturer {
     this.structurer = structurer
   }
 
-  async capture(url: string, siteName: string, dateStr: string): Promise<void> {
+  async capture(site: Site, dateStr: string): Promise<void> {
+    const slug = siteSlug(site)
     const browser = await chromium.launch({
       args: [
         '--no-sandbox',
@@ -26,10 +29,12 @@ export class ScreenCapturer {
     const page = await context.newPage()
 
     try {
+      console.log(`  opening site: ${site.url}...`)
       await page.setViewportSize({ width: 1440, height: 900 })
-      await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 })
+      await page.goto(site.url, { waitUntil: 'networkidle', timeout: 30000 })
 
       // Auto-dismiss common cookie banners (basic heuristic)
+      console.log(`  dismissing grdp banners...`)
       const acceptButtons = page.locator(
         'button:has-text("Accept"), button:has-text("Agree"), button:has-text("I Accept"), button:has-text("Confirm")',
       )
@@ -37,7 +42,7 @@ export class ScreenCapturer {
         await acceptButtons
           .first()
           .click({ timeout: 2000 })
-          .catch(() => {})
+          .catch(() => { })
       }
 
       // Auto-dismiss common cookie banners (basic heuristic)
@@ -46,16 +51,18 @@ export class ScreenCapturer {
         await okButton
           .first()
           .click({ timeout: 2000 })
-          .catch(() => {})
+          .catch(() => { })
       }
 
       // handle image
+      console.log(`  saving image...`)
       const screenshotBuffer = await page.screenshot({ fullPage: true })
-      await this.storage.saveScreenshot(`${dateStr}/${siteName}.png`, screenshotBuffer)
+      await this.storage.saveScreenshot(`${dateStr}/${slug}.png`, screenshotBuffer)
 
       // handle text via AI
-      const structuredMarkdown = await this.structurer.structureAndTranslate(screenshotBuffer)
-      await this.storage.saveText(`${dateStr}/${siteName}.md`, structuredMarkdown)
+      console.log(`  extracting text...`)
+      const structuredMarkdown = await this.structurer.structureAndTranslate(screenshotBuffer, site.country)
+      await this.storage.saveText(`${dateStr}/${slug}.md`, structuredMarkdown)
     } finally {
       await browser.close()
     }

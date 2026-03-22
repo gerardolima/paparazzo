@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, it, mock } from 'node:test'
 import type { AIClient } from './ai-client.ts'
+import type { Site } from './config/sites.ts'
 import type { Storage } from './storage/storage.ts'
 
 // biome-ignore lint/suspicious/noExplicitAny: helper for node:test mock type casting
@@ -26,6 +27,15 @@ mock.module('playwright', { namedExports: { chromium: mockChromium } })
 
 // Must import after mock.module
 const { ScreenCapturer } = await import('./screen-capturer.ts')
+
+const testSite: Site = {
+  name: 'Example Agency',
+  description: 'Test description',
+  country: 'Testland',
+  version: 'original',
+  url: 'https://example.com',
+  enabled: true,
+}
 
 describe('ScreenCapturer', () => {
   const mockStorage: Storage = {
@@ -54,33 +64,43 @@ describe('ScreenCapturer', () => {
   })
 
   describe('capture', () => {
-    it('saves screenshot with correct filename', async () => {
+    it('saves screenshot using slug-based filename', async () => {
       const capturer = new ScreenCapturer(mockStorage, mockStructurer)
-      await capturer.capture('https://example.com', 'example', '2024-06-15')
+      await capturer.capture(testSite, '2024-06-15')
 
       const saveFn = mockStorage.saveScreenshot as unknown as MockFn
       assert.equal(saveFn.mock.callCount(), 1)
-      assert.equal(saveFn.mock.calls[0].arguments[0], '2024-06-15/example.png')
+      assert.equal(saveFn.mock.calls[0].arguments[0], '2024-06-15/example-agency.png')
     })
 
-    it('passes screenshot buffer to AI structurer', async () => {
+    it('passes screenshot buffer and country to AI structurer', async () => {
       const capturer = new ScreenCapturer(mockStorage, mockStructurer)
-      await capturer.capture('https://example.com', 'example', '2024-06-15')
+      await capturer.capture(testSite, '2024-06-15')
 
       const structureFn = mockStructurer.structureAndTranslate as unknown as MockFn
       assert.equal(structureFn.mock.callCount(), 1)
       const passedBuffer = structureFn.mock.calls[0].arguments[0] as Buffer
       assert.equal(passedBuffer.toString(), 'fake-png')
+      assert.equal(structureFn.mock.calls[0].arguments[1], 'Testland')
     })
 
-    it('saves translated markdown with correct filename', async () => {
+    it('saves translated markdown using slug-based filename', async () => {
       const capturer = new ScreenCapturer(mockStorage, mockStructurer)
-      await capturer.capture('https://example.com', 'example', '2024-06-15')
+      await capturer.capture(testSite, '2024-06-15')
 
       const saveTextFn = mockStorage.saveText as unknown as MockFn
       assert.equal(saveTextFn.mock.callCount(), 1)
-      assert.equal(saveTextFn.mock.calls[0].arguments[0], '2024-06-15/example.md')
+      assert.equal(saveTextFn.mock.calls[0].arguments[0], '2024-06-15/example-agency.md')
       assert.equal(saveTextFn.mock.calls[0].arguments[1], '# Translated headlines')
+    })
+
+    it('appends -english to slug for english version sites', async () => {
+      const englishSite: Site = { ...testSite, version: 'english' }
+      const capturer = new ScreenCapturer(mockStorage, mockStructurer)
+      await capturer.capture(englishSite, '2024-06-15')
+
+      const saveFn = mockStorage.saveScreenshot as unknown as MockFn
+      assert.equal(saveFn.mock.calls[0].arguments[0], '2024-06-15/example-agency-english.png')
     })
 
     it('closes browser even when AI structurer throws', async () => {
@@ -89,7 +109,7 @@ describe('ScreenCapturer', () => {
       })
 
       const capturer = new ScreenCapturer(mockStorage, mockStructurer)
-      await assert.rejects(() => capturer.capture('https://example.com', 'example', '2024-06-15'), {
+      await assert.rejects(() => capturer.capture(testSite, '2024-06-15'), {
         message: 'AI service unavailable',
       })
 

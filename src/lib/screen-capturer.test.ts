@@ -3,6 +3,7 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { after, before, describe, it, mock } from 'node:test'
 import { AIClient } from './ai-client.ts'
+import type { Site } from './config/sites.ts'
 import { ScreenCapturer } from './screen-capturer.ts'
 import { LocalStorage } from './storage/local-storage.ts'
 
@@ -24,6 +25,15 @@ describe('ScreenCapturer (INTEGRATION)', () => {
 
   const capturer = new ScreenCapturer(adapter, structurer)
 
+  const testSite: Site = {
+    name: 'EFE',
+    description: 'Agencia EFE',
+    country: 'Espanha',
+    version: 'original',
+    url: 'https://efe.com/',
+    enabled: true,
+  }
+
   before(async () => {
     await fs.rm(testDir, { recursive: true, force: true })
   })
@@ -34,23 +44,23 @@ describe('ScreenCapturer (INTEGRATION)', () => {
 
   describe('capture', () => {
     before(async () => {
-      await capturer.capture('https://efe.com/', 'example', '2024-01-01')
+      await capturer.capture(testSite, '2024-01-01')
     })
 
     it('captures a screenshot of a real webpage', async () => {
-      const screenshotPath = path.join(testDir, '2024-01-01', 'example.png')
+      const screenshotPath = path.join(testDir, '2024-01-01', 'efe.png')
       const stat = await fs.stat(screenshotPath)
 
       assert.ok(stat.isFile())
-      assert.ok(stat.size > 0, 'Screenshot should not be empty')
+      assert.ok(stat.size > 0, 'Screenshot not be empty')
     })
 
     it('extracts text from a real webpage', async () => {
-      const textPath = path.join(testDir, '2024-01-01', 'example.md')
+      const textPath = path.join(testDir, '2024-01-01', 'efe.md')
       const textStat = await fs.stat(textPath)
       assert.ok(textStat.isFile())
       const content = await fs.readFile(textPath, 'utf8')
-      assert.ok(content.length > 0, 'Extracted text should not be empty')
+      assert.ok(content.length > 0, 'Extracted text not be empty')
     })
   })
 })

@@ -36,23 +36,24 @@ export const handler = async () => {
   const capturer = new ScreenCapturer(storage, aiClient)
   const generator = new ReportGenerator(storage)
 
+  const enabledSites = SITES.filter((s) => s.enabled)
   const processed: string[] = []
 
-  for (const site of SITES) {
+  for (const site of enabledSites) {
     try {
-      console.log(`Processing ${site.name}...`)
-      await capturer.capture(site.url, site.name, dateStr)
-      processed.push(site.name)
+      console.log(`Processing ${site.name} (${site.version})...`)
+      await capturer.capture(site, dateStr)
+      processed.push(`${site.name} (${site.version})`)
     } catch (error) {
-      console.error(`Failed to process ${site.name}:`, error)
+      console.error(`Failed to process ${site.name} (${site.version}):`, error)
     }
   }
 
   console.log('Generating report...')
-  await generator.generate(dateStr)
+  await generator.generate(dateStr, enabledSites)
 
   return {
     statusCode: 200,
-    body: JSON.stringify({ dateStr, processed, total: SITES.length }),
+    body: JSON.stringify({ dateStr, processed, total: enabledSites.length }),
   }
 }

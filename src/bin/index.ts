@@ -19,17 +19,19 @@ async function run() {
 
   console.log(`Starting Paparazzo for ${dateStr}...`)
 
-  for (const site of SITES) {
+  const enabledSites = SITES.filter((s) => s.enabled)
+
+  for (const site of enabledSites) {
     try {
-      console.log(`Processing ${site.name}...`)
-      await capturer.capture(site.url, site.name, dateStr)
+      console.log(`Processing ${site.name} (${site.version})...`)
+      await capturer.capture(site, dateStr)
     } catch (error) {
-      console.error(`Failed to process ${site.name}:`, error)
+      console.error(`Failed to process ${site.name} (${site.version}):`, error)
     }
   }
 
   console.log('Generating report...')
-  await generator.generate(dateStr)
+  await generator.generate(dateStr, enabledSites)
 
   console.log(`Done! Report available in out/media/${dateStr}/index.html`)
 }

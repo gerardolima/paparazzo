@@ -1,3 +1,5 @@
+import type { Site } from './config/sites.ts'
+import { siteSlug } from './config/sites.ts'
 import type { Storage } from './storage/storage.ts'
 
 export class ReportGenerator {
@@ -7,24 +9,59 @@ export class ReportGenerator {
     this.storage = storage
   }
 
-  async generate(dateStr: string): Promise<void> {
+  async generate(dateStr: string, sites: Site[]): Promise<void> {
     const files = await this.storage.listEntries(dateStr)
     const screenshots = files.filter((f) => f.endsWith('.png'))
 
-    const cardsHtml = screenshots
-      .map((screenshot) => {
-        const siteName = screenshot.replace('.png', '')
-        const markdownFile = `${siteName}.md`
-        const hasMarkdown = files.includes(markdownFile)
+    const slugToSite = new Map<string, Site>()
+    for (const site of sites) {
+      slugToSite.set(siteSlug(site), site)
+    }
 
-        return `
+    // Group screenshots by country
+    const byCountry = new Map<string, string[]>()
+    for (const screenshot of screenshots) {
+      const slug = screenshot.replace('.png', '')
+      const site = slugToSite.get(slug)
+      const country = site?.country ?? 'Unknown'
+      const group = byCountry.get(country) ?? []
+      group.push(screenshot)
+      byCountry.set(country, group)
+    }
+
+    // Sort countries alphabetically
+    const sortedCountries = [...byCountry.keys()].sort((a, b) => a.localeCompare(b))
+
+    const sectionsHtml = sortedCountries
+      .map((country) => {
+        const countryScreenshots = byCountry.get(country)!
+        const cardsHtml = countryScreenshots
+          .map((screenshot) => {
+            const slug = screenshot.replace('.png', '')
+            const site = slugToSite.get(slug)
+            const markdownFile = `${slug}.md`
+            const hasMarkdown = files.includes(markdownFile)
+
+            const name = site?.name ?? slug
+            const description = site?.description
+
+            return `
         <div class="card">
-          <h2>${siteName}</h2>
+          <h3>${name}</h3>
+          ${description ? `<p class="description">${description}</p>` : ''}
           ${hasMarkdown ? `<p><a href="${markdownFile}">View Translated Text</a></p>` : ''}
           <a href="${screenshot}" target="_blank">
-            <img src="${screenshot}" alt="${siteName} Screenshot">
+            <img src="${screenshot}" alt="${name} Screenshot">
           </a>
         </div>`
+          })
+          .join('\n')
+
+        return `
+      <h2>${country}</h2>
+      <div class="grid">
+        ${cardsHtml}
+      </div>`
       })
       .join('\n')
 
@@ -37,9 +74,11 @@ export class ReportGenerator {
     <title>Paparazzo Daily Report - ${dateStr}</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f4f9; padding: 20px; }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 5px; margin-top: 30px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .card { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); padding: 15px; display: flex; flex-direction: column; }
-        .card h2 { margin-top: 0; font-size: 1.2rem; text-transform: capitalize; }
+        .card h3 { margin-top: 0; font-size: 1.2rem; }
+        .card .description { color: #666; font-size: 0.9rem; margin: 0 0 10px; }
         .card img { width: 100%; height: auto; border-radius: 4px; border: 1px solid #ddd; cursor: pointer; }
         .card a { color: #007bff; text-decoration: none; margin-top: 10px; font-weight: bold; }
         .card a:hover { text-decoration: underline; }
@@ -47,9 +86,7 @@ export class ReportGenerator {
 </head>
 <body>
     <h1>News Report: ${dateStr}</h1>
-    <div class="grid">
-        ${cardsHtml}
-    </div>
+    ${sectionsHtml}
 </body>
 </html>`
 

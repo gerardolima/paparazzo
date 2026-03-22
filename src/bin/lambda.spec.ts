@@ -25,6 +25,15 @@ mock.module('../lib/storage/s3-storage.ts', {
 mock.module('../lib/ai-client.ts', {
   namedExports: { AIClient: class {} },
 })
+mock.module('../lib/config/sites.ts', {
+  namedExports: {
+    SITES: [
+      { name: 'Site1', description: 'Desc', country: 'CountryA', version: 'original', url: 'https://site1.com', enabled: true },
+      { name: 'Site2', description: null, country: 'CountryB', version: 'english', url: 'https://site2.com', enabled: true },
+      { name: 'Site3', description: 'Disabled', country: 'CountryC', version: 'original', url: 'https://site3.com', enabled: false },
+    ],
+  },
+})
 mock.module('@aws-sdk/client-ssm', {
   namedExports: {
     SSMClient: class {
@@ -78,10 +87,10 @@ describe('handler', () => {
     })
   })
 
-  it('processes all sites and generates report on success', async () => {
+  it('processes only enabled sites and generates report on success', async () => {
     const result = await handler()
 
-    assert.equal(mockCapture.mock.callCount(), 3)
+    assert.equal(mockCapture.mock.callCount(), 2)
     assert.equal(mockGenerate.mock.callCount(), 1)
     assert.equal(result.statusCode, 200)
   })
@@ -95,17 +104,18 @@ describe('handler', () => {
 
     const result = await handler()
 
-    assert.equal(mockCapture.mock.callCount(), 3)
+    assert.equal(mockCapture.mock.callCount(), 2)
     assert.equal(mockGenerate.mock.callCount(), 1)
     assert.equal(result.statusCode, 200)
   })
 
-  it('returns 200 with summary including site names', async () => {
+  it('returns 200 with summary of enabled sites only', async () => {
     const result = await handler()
     const body = JSON.parse(result.body)
 
     assert.equal(result.statusCode, 200)
     assert.ok(body.processed)
-    assert.equal(body.processed.length, 3)
+    assert.equal(body.processed.length, 2)
+    assert.equal(body.total, 2)
   })
 })

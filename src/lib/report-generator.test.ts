@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { after, before, describe, it } from 'node:test'
+import type { Site } from './config/sites.ts'
 import { ReportGenerator } from './report-generator.ts'
 import { LocalStorage } from './storage/local-storage.ts'
 
@@ -11,9 +12,14 @@ describe('ReportGenerator (INTEGRATION)', () => {
   const generator = new ReportGenerator(adapter)
   const dateStr = '2024-01-01'
 
+  const sites: Site[] = [
+    { name: 'Test1', description: 'First agency', country: 'CountryA', version: 'original', url: 'https://test1.com', enabled: true },
+    { name: 'Test2', description: null, country: 'CountryB', version: 'original', url: 'https://test2.com', enabled: true },
+  ]
+
   before(async () => {
     await fs.rm(testDir, { recursive: true, force: true })
-    // Seed some data
+    // Seed some data using slugs that match the sites
     await adapter.saveScreenshot(`${dateStr}/test1.png`, Buffer.from('img1'))
     await adapter.saveText(`${dateStr}/test1.md`, '# Text 1')
     await adapter.saveScreenshot(`${dateStr}/test2.png`, Buffer.from('img2'))
@@ -24,7 +30,7 @@ describe('ReportGenerator (INTEGRATION)', () => {
   })
 
   it('generates the index.html file in the correct directory', async () => {
-    await generator.generate(dateStr)
+    await generator.generate(dateStr, sites)
 
     const indexPath = path.join(testDir, dateStr, 'index.html')
     const stat = await fs.stat(indexPath)
