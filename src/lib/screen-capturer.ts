@@ -31,7 +31,7 @@ export class ScreenCapturer {
     try {
       console.log(`  opening site: ${site.url}...`)
       await page.setViewportSize({ width: 1440, height: 900 })
-      await page.goto(site.url, { waitUntil: 'networkidle', timeout: 30000 })
+      await page.goto(site.url, { waitUntil: 'domcontentloaded', timeout: 30_000 })
 
       // Auto-dismiss common cookie banners (basic heuristic)
       console.log(`  dismissing grdp banners...`)
