@@ -12,8 +12,11 @@ export class PaparazzoStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
 
+    // ------------------------------------------------------------------------
+    // s3: `MediaBucket`
+    // ------------------------------------------------------------------------
     const bucket = new s3.Bucket(this, 'MediaBucket', {
-      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
       publicReadAccess: true,
       blockPublicAccess: new s3.BlockPublicAccess({
         blockPublicAcls: true,
@@ -23,14 +26,21 @@ export class PaparazzoStack extends cdk.Stack {
       }),
     })
 
+    // ------------------------------------------------------------------------
+    // ssm: `/paparazzo/google-api-key`
+    // ------------------------------------------------------------------------
     const apiKeyParam = ssm.StringParameter.fromSecureStringParameterAttributes(this, 'GeminiApiKey', {
       parameterName: '/paparazzo/google-api-key',
     })
 
+    // ------------------------------------------------------------------------
+    // lambda: `PaparazzoLambda`
+    // ------------------------------------------------------------------------
+    const dockerImageDir = path.join(path.dirname(url.fileURLToPath(import.meta.url)), '..')
+    const dockerImageOpts = { file: 'Dockerfile' }
+
     const fn = new lambda.DockerImageFunction(this, 'PaparazzoLambda', {
-      code: lambda.DockerImageCode.fromImageAsset(path.join(path.dirname(url.fileURLToPath(import.meta.url)), '..'), {
-        file: 'Dockerfile',
-      }),
+      code: lambda.DockerImageCode.fromImageAsset(dockerImageDir, dockerImageOpts),
       architecture: lambda.Architecture.ARM_64,
       memorySize: 2048,
       timeout: cdk.Duration.minutes(15),
@@ -43,21 +53,19 @@ export class PaparazzoStack extends cdk.Stack {
     apiKeyParam.grantRead(fn)
     bucket.grantReadWrite(fn)
 
+    // ------------------------------------------------------------------------
+    // cron-schedule: `DailySchedule`
+    // ------------------------------------------------------------------------
     const rule = new events.Rule(this, 'DailySchedule', {
       schedule: events.Schedule.cron({ hour: '8', minute: '0' }),
     })
     rule.addTarget(new targets.LambdaFunction(fn))
 
-    new cdk.CfnOutput(this, 'LambdaFunctionName', {
-      value: fn.functionName,
-    })
-
-    new cdk.CfnOutput(this, 'MediaBucketName', {
-      value: bucket.bucketName,
-    })
-
-    new cdk.CfnOutput(this, 'MediaBucketUrl', {
-      value: `https://${bucket.bucketRegionalDomainName}`,
-    })
+    // ------------------------------------------------------------------------
+    // outputs
+    // ------------------------------------------------------------------------
+    new cdk.CfnOutput(this, 'LambdaFunctionName', { value: fn.functionName })
+    new cdk.CfnOutput(this, 'MediaBucketName', { value: bucket.bucketName })
+    new cdk.CfnOutput(this, 'MediaBucketUrl', { value: `https://${bucket.bucketRegionalDomainName}` })
   }
 }

@@ -6,12 +6,18 @@ export class BootstrapStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props)
 
+    // ------------------------------------------------------------------------
+    // OIDC-provider: `GitHubOidc`
+    // ------------------------------------------------------------------------
     const oidcProvider = iam.OpenIdConnectProvider.fromOpenIdConnectProviderArn(
       this,
       'GitHubOidc',
       `arn:aws:iam::${this.account}:oidc-provider/token.actions.githubusercontent.com`,
     )
 
+    // ------------------------------------------------------------------------
+    // role: `GitHubActionsRole`
+    // ------------------------------------------------------------------------
     const role = new iam.Role(this, 'GitHubActionsRole', {
       roleName: 'github-actions-paparazzo',
       assumedBy: new iam.WebIdentityPrincipal(oidcProvider.openIdConnectProviderArn, {
@@ -26,8 +32,6 @@ export class BootstrapStack extends cdk.Stack {
 
     role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'))
 
-    new cdk.CfnOutput(this, 'GitHubActionsRoleArn', {
-      value: role.roleArn,
-    })
+    new cdk.CfnOutput(this, 'GitHubActionsRoleArn', { value: role.roleArn })
   }
 }
