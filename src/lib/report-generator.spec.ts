@@ -38,14 +38,14 @@ const sites: Site[] = [
 ]
 
 describe('ReportGenerator', () => {
-  const mockStorage: Storage = {
-    saveScreenshot: mock.fn(async () => {}),
-    saveText: mock.fn(async () => {}),
-    listEntries: mock.fn(async () => []),
-  }
+  const mockStorage = {
+    saveScreenshot: mock.fn(async (_filename: string, _data: Buffer): Promise<void> => {}),
+    saveText: mock.fn(async (_filename: string, _content: string): Promise<void> => {}),
+    listEntries: mock.fn(async (_dateStr: string): Promise<string[]> => []),
+  } as const satisfies Storage
 
   beforeEach(() => {
-    ;(mockStorage.listEntries as unknown as MockFn).mock.mockImplementation(async () => [
+    mockStorage.listEntries.mock.mockImplementation(async () => [
       'efe-esp.png',
       'efe-esp.md',
       'ansa-ita.png',
@@ -55,8 +55,8 @@ describe('ReportGenerator', () => {
   })
 
   afterEach(() => {
-    ;(mockStorage.saveText as unknown as MockFn).mock.resetCalls()
-    ;(mockStorage.listEntries as unknown as MockFn).mock.resetCalls()
+    mockStorage.saveText.mock.resetCalls()
+    mockStorage.listEntries.mock.resetCalls()
   })
 
   describe('generate', () => {

@@ -1,5 +1,5 @@
-import { AIClient } from '../lib/ai-client.ts'
 import { SITES } from '../lib/data/sites.ts'
+import { AIClientGoogle } from '../lib/ia-client/ai-client-google.ts'
 import { ReportGenerator } from '../lib/report-generator.ts'
 import { ScreenCapturer } from '../lib/screen-capturer.ts'
 import { LocalStorage } from '../lib/storage/local-storage.ts'
@@ -13,7 +13,7 @@ async function run() {
 
   const dateStr = new Date().toISOString().split('T')[0]
   const storage = new LocalStorage()
-  const aiClient = new AIClient(apiKey)
+  const aiClient = new AIClientGoogle(apiKey)
   const capturer = new ScreenCapturer(storage, aiClient)
   const generator = new ReportGenerator(storage)
 

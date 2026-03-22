@@ -1,6 +1,6 @@
 import { chromium } from 'playwright'
-import type { AIClient } from './ai-client.ts'
 import type { Site } from './data/sites.ts'
+import type { AIClient } from './ia-client/ai-client.ts'
 import type { Storage } from './storage/storage.ts'
 
 const BLOCKED_DOMAINS = [

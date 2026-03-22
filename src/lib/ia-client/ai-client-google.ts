@@ -1,10 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import type { AIClient } from './ai-client.ts'
 
-/**
- * AIStructurer uses a Multimodal LLM to analyze a screenshot and extract
- * structured, translated Markdown content based on the visual layout.
- */
-export class AIClient {
+export class AIClientGoogle implements AIClient {
   readonly #genAI: GoogleGenerativeAI
 
   constructor(apiKey: string) {

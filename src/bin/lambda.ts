@@ -1,6 +1,6 @@
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm'
-import { AIClient } from '../lib/ai-client.ts'
 import { SITES } from '../lib/data/sites.ts'
+import { AIClientGoogle } from '../lib/ia-client/ai-client-google.ts'
 import { ReportGenerator } from '../lib/report-generator.ts'
 import { ScreenCapturer } from '../lib/screen-capturer.ts'
 import { S3Storage } from '../lib/storage/s3-storage.ts'
@@ -32,7 +32,7 @@ export const handler = async () => {
 
   const dateStr = new Date().toISOString().split('T')[0]
   const storage = new S3Storage(bucket)
-  const aiClient = new AIClient(apiKey)
+  const aiClient = new AIClientGoogle(apiKey)
   const capturer = new ScreenCapturer(storage, aiClient)
   const generator = new ReportGenerator(storage)
 

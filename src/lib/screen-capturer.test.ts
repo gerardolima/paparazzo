@@ -2,8 +2,9 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { after, before, describe, it, mock } from 'node:test'
-import { AIClient } from './ai-client.ts'
 import type { Site } from './data/sites.ts'
+import type { AIClient } from './ia-client/ai-client.ts'
+import { AIClientGoogle } from './ia-client/ai-client-google.ts'
 import { ScreenCapturer } from './screen-capturer.ts'
 import { LocalStorage } from './storage/local-storage.ts'
 
@@ -12,18 +13,18 @@ describe('ScreenCapturer (INTEGRATION)', () => {
   const adapter = new LocalStorage(testDir)
 
   const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY
-  let structurer: AIClient
+  let aiClient: AIClient
 
   if (apiKey) {
-    structurer = new AIClient(apiKey)
+    aiClient = new AIClientGoogle(apiKey)
   } else {
     // Mock structurer for CI/local runs without a key
-    structurer = {
+    aiClient = {
       structureAndTranslate: mock.fn(async () => '# Mocked Structured News\n\nContent translated to English.'),
-    } as unknown as AIClient
+    } as const satisfies AIClient
   }
 
-  const capturer = new ScreenCapturer(adapter, structurer)
+  const capturer = new ScreenCapturer(adapter, aiClient)
 
   const testSite: Site = {
     slug: 'efe-esp',
