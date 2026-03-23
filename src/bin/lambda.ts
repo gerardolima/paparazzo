@@ -15,7 +15,7 @@ async function getApiKey(): Promise<string> {
     new GetParameterCommand({
       Name: ssmParamName,
       WithDecryption: true,
-    })
+    }),
   )
 
   const apiKey = Parameter?.Value
@@ -24,7 +24,6 @@ async function getApiKey(): Promise<string> {
   }
   return apiKey
 }
-
 
 export const handler = async () => {
   const apiKey = await getApiKey()
@@ -59,4 +58,3 @@ export const handler = async () => {
     body: JSON.stringify({ dateStr, processed, total: enabledSites.length }),
   }
 }
-

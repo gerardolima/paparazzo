@@ -50,8 +50,9 @@ After all sites are processed, the **ReportGenerator** reads the screenshots and
 npm install
 npx playwright install chromium
 
-# create .env with your API key
-echo 'GOOGLE_GENERATIVE_AI_API_KEY=your-key-here' > .env
+# create .env from the example and fill in your values
+cp .env.example .env
+# edit .env with your AWS account ID and Gemini API key
 
 # run locally against all enabled sites
 npm start
