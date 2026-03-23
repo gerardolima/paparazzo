@@ -2,9 +2,9 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { after, before, describe, it } from 'node:test'
-import type { Site } from './data/sites.ts'
 import { FileStoreLocal } from './file-store/file-store-local.ts'
 import { ReportGenerator } from './report-generator.ts'
+import type { Site } from './site-repository/site-repository.ts'
 
 describe('ReportGenerator (INTEGRATION)', () => {
   const testDir = './out/test/gallery'

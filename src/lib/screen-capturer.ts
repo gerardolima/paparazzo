@@ -3,9 +3,9 @@ import os from 'node:os'
 import path from 'node:path'
 import { performance } from 'node:perf_hooks'
 import { chromium } from 'playwright'
-import type { Site } from './data/sites.ts'
 import type { FileStore } from './file-store/file-store.ts'
 import type { AIClient } from './ia-client/ai-client.ts'
+import type { Site } from './site-repository/site-repository.ts'
 
 const BLOCKED_DOMAINS = [
   'googlesyndication.com',

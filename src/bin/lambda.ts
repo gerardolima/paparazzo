@@ -1,9 +1,10 @@
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm'
-import { SITES } from '../lib/data/sites.ts'
+import { SITES } from '../data/sites.ts'
 import { FileStoreS3 } from '../lib/file-store/file-store-s3.ts'
 import { AIClientGoogle } from '../lib/ia-client/ai-client-google.ts'
 import { ReportGenerator } from '../lib/report-generator.ts'
 import { ScreenCapturer } from '../lib/screen-capturer.ts'
+import { SiteRepositoryStatic } from '../lib/site-repository/site-repository-static.ts'
 
 const ssm = new SSMClient()
 
@@ -31,12 +32,13 @@ export const handler = async () => {
   }
 
   const dateStr = new Date().toISOString().split('T')[0]
+  const siteRepo = new SiteRepositoryStatic(SITES)
   const fileStore = new FileStoreS3(bucket)
   const aiClient = new AIClientGoogle(apiKey)
   const capturer = new ScreenCapturer(fileStore, aiClient)
   const generator = new ReportGenerator(fileStore)
 
-  const enabledSites = SITES.filter((s) => s.enabled)
+  const enabledSites = await siteRepo.findEnabled()
   const processed: string[] = []
 
   const total = enabledSites.length

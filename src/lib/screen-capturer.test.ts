@@ -2,11 +2,11 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { after, before, describe, it, mock } from 'node:test'
-import type { Site } from './data/sites.ts'
 import { FileStoreLocal } from './file-store/file-store-local.ts'
 import type { AIClient } from './ia-client/ai-client.ts'
 import { AIClientGoogle } from './ia-client/ai-client-google.ts'
 import { ScreenCapturer } from './screen-capturer.ts'
+import type { Site } from './site-repository/site-repository.ts'
 
 describe('ScreenCapturer (INTEGRATION)', () => {
   const testDir = './out/test/media'

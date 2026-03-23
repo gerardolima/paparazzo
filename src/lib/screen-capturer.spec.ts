@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict'
-import os from 'node:os'
-import path from 'node:path'
 import { afterEach, beforeEach, describe, it, mock } from 'node:test'
-import type { Site } from './data/sites.ts'
 import type { FileStore } from './file-store/file-store.ts'
 import type { AIClient } from './ia-client/ai-client.ts'
+import type { Site } from './site-repository/site-repository.ts'
 
 const mockRm = mock.fn(async (_path: string, _options: { recursive: boolean; force: boolean }) => {})
 mock.module('node:fs/promises', { namedExports: { rm: mockRm } })

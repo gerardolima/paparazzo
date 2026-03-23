@@ -25,7 +25,7 @@ mock.module('../lib/file-store/file-store-s3.ts', {
 mock.module('../lib/ia-client/ai-client-google.ts', {
   namedExports: { AIClientGoogle: class {} },
 })
-mock.module('../lib/data/sites.ts', {
+mock.module('../data/sites.ts', {
   namedExports: {
     SITES: [
       {

@@ -1,12 +1,4 @@
-export type Site = {
-  slug: string
-  name: string
-  description: string | null
-  country: string
-  version: 'original' | 'english'
-  url: string
-  enabled: boolean
-}
+import type { Site } from '../lib/site-repository/site-repository.ts'
 
 export const SITES: Site[] = [
   {

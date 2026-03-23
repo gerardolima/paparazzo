@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, it, mock } from 'node:test'
-import type { Site } from './data/sites.ts'
 import type { FileStore } from './file-store/file-store.ts'
 import { ReportGenerator } from './report-generator.ts'
+import type { Site } from './site-repository/site-repository.ts'
 
 // biome-ignore lint/suspicious/noExplicitAny: helper for node:test mock type casting
 type MockFn = ReturnType<typeof mock.fn> & { mock: any }

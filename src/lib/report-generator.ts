@@ -1,5 +1,5 @@
-import type { Site } from './data/sites.ts'
 import type { FileStore } from './file-store/file-store.ts'
+import type { Site } from './site-repository/site-repository.ts'
 
 export class ReportGenerator {
   readonly #fileStore: FileStore
