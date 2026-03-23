@@ -1,5 +1,6 @@
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm'
 import { SITES } from '../data/sites.ts'
+import { loadEnv } from '../lib/config/config.ts'
 import { FileStoreS3 } from '../lib/file-store/file-store-s3.ts'
 import { AIClientGoogle } from '../lib/ia-client/ai-client-google.ts'
 import { ReportGenerator } from '../lib/report-generator.ts'
@@ -7,33 +8,30 @@ import { ScreenCapturer } from '../lib/screen-capturer.ts'
 import { SiteRepositoryStatic } from '../lib/site-repository/site-repository-static.ts'
 
 const ssm = new SSMClient()
+const [ssmParamName, s3Bucket] = loadEnv('SSM_API_KEY_NAME', 'S3_BUCKET')
 
-export const handler = async () => {
-  const ssmParamName = process.env.SSM_API_KEY_NAME
-  if (!ssmParamName) {
-    throw new Error('Missing required environment variable: SSM_API_KEY_NAME')
-  }
-
-  const bucket = process.env.S3_BUCKET
-  if (!bucket) {
-    throw new Error('Missing required environment variable: S3_BUCKET')
-  }
-
+async function getApiKey(): Promise<string> {
   const { Parameter } = await ssm.send(
     new GetParameterCommand({
       Name: ssmParamName,
       WithDecryption: true,
-    }),
+    })
   )
 
   const apiKey = Parameter?.Value
   if (!apiKey) {
     throw new Error(`SSM parameter ${ssmParamName} not found or empty`)
   }
+  return apiKey
+}
+
+
+export const handler = async () => {
+  const apiKey = await getApiKey()
 
   const dateStr = new Date().toISOString().split('T')[0]
   const siteRepo = new SiteRepositoryStatic(SITES)
-  const fileStore = new FileStoreS3(bucket)
+  const fileStore = new FileStoreS3(s3Bucket)
   const aiClient = new AIClientGoogle(apiKey)
   const capturer = new ScreenCapturer(fileStore, aiClient)
   const generator = new ReportGenerator(fileStore)
@@ -61,3 +59,4 @@ export const handler = async () => {
     body: JSON.stringify({ dateStr, processed, total: enabledSites.length }),
   }
 }
+

@@ -5,6 +5,11 @@ const mockCapture = mock.fn(async () => {})
 const mockGenerate = mock.fn(async () => {})
 const mockSsmSend = mock.fn(async () => ({ Parameter: { Value: 'test-api-key' } }))
 
+mock.module('../lib/config/config.ts', {
+  namedExports: {
+    loadEnv: () => ['/paparazzo/google-api-key', 'test-bucket'],
+  },
+})
 mock.module('../lib/screen-capturer.ts', {
   namedExports: {
     ScreenCapturer: class {
@@ -70,29 +75,16 @@ mock.module('@aws-sdk/client-ssm', {
 const { handler } = await import('./lambda.ts')
 
 describe('handler', () => {
-  const originalEnv = { ...process.env }
-
   beforeEach(() => {
-    process.env.SSM_API_KEY_NAME = '/paparazzo/google-api-key'
-    process.env.S3_BUCKET = 'test-bucket'
     mockCapture.mock.mockImplementation(async () => {})
     mockGenerate.mock.mockImplementation(async () => {})
     mockSsmSend.mock.mockImplementation(async () => ({ Parameter: { Value: 'test-api-key' } }))
   })
 
   afterEach(() => {
-    process.env = { ...originalEnv }
     mockCapture.mock.resetCalls()
     mockGenerate.mock.resetCalls()
     mockSsmSend.mock.resetCalls()
-  })
-
-  it('throws when SSM_API_KEY_NAME is missing', async () => {
-    delete process.env.SSM_API_KEY_NAME
-
-    await assert.rejects(() => handler(), {
-      message: /SSM_API_KEY_NAME/,
-    })
   })
 
   it('throws when SSM parameter returns empty value', async () => {
@@ -100,14 +92,6 @@ describe('handler', () => {
 
     await assert.rejects(() => handler(), {
       message: /SSM parameter/,
-    })
-  })
-
-  it('throws when S3_BUCKET is missing', async () => {
-    delete process.env.S3_BUCKET
-
-    await assert.rejects(() => handler(), {
-      message: /S3_BUCKET/,
     })
   })
 
