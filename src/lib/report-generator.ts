@@ -1,15 +1,15 @@
 import type { Site } from './data/sites.ts'
-import type { Storage } from './storage/storage.ts'
+import type { FileStore } from './file-store/file-store.ts'
 
 export class ReportGenerator {
-  readonly #storage: Storage
+  readonly #fileStore: FileStore
 
-  constructor(storage: Storage) {
-    this.#storage = storage
+  constructor(fileStore: FileStore) {
+    this.#fileStore = fileStore
   }
 
   async generate(dateStr: string, sites: Site[]): Promise<void> {
-    const files = await this.#storage.listEntries(dateStr)
+    const files = await this.#fileStore.readdir(dateStr)
     const screenshots = files.filter((f) => f.endsWith('.png'))
 
     const slugToSite = new Map<string, Site>()
@@ -24,7 +24,7 @@ export class ReportGenerator {
         .filter((s) => files.includes(s.replace('.png', '.md')))
         .map(async (s) => {
           const slug = s.replace('.png', '')
-          const content = await this.#storage.readText(`${dateStr}/${slug}.md`)
+          const content = await this.#fileStore.readFile(`${dateStr}/${slug}.md`)
           slugToContent.set(slug, content)
         }),
     )
@@ -105,6 +105,6 @@ export class ReportGenerator {
 </body>
 </html>`
 
-    await this.#storage.saveText(`${dateStr}/index.html`, html)
+    await this.#fileStore.writeFile(`${dateStr}/index.html`, html)
   }
 }

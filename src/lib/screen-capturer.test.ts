@@ -3,14 +3,14 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { after, before, describe, it, mock } from 'node:test'
 import type { Site } from './data/sites.ts'
+import { FileStoreLocal } from './file-store/file-store-local.ts'
 import type { AIClient } from './ia-client/ai-client.ts'
 import { AIClientGoogle } from './ia-client/ai-client-google.ts'
 import { ScreenCapturer } from './screen-capturer.ts'
-import { LocalStorage } from './storage/local-storage.ts'
 
 describe('ScreenCapturer (INTEGRATION)', () => {
   const testDir = './out/test/media'
-  const adapter = new LocalStorage(testDir)
+  const fileStore = new FileStoreLocal(testDir)
 
   const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY
   let aiClient: AIClient
@@ -24,7 +24,7 @@ describe('ScreenCapturer (INTEGRATION)', () => {
     } as const satisfies AIClient
   }
 
-  const capturer = new ScreenCapturer(adapter, aiClient)
+  const capturer = new ScreenCapturer(fileStore, aiClient)
 
   const testSite: Site = {
     slug: 'efe-esp',

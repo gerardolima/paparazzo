@@ -4,8 +4,8 @@ import path from 'node:path'
 import { performance } from 'node:perf_hooks'
 import { chromium } from 'playwright'
 import type { Site } from './data/sites.ts'
+import type { FileStore } from './file-store/file-store.ts'
 import type { AIClient } from './ia-client/ai-client.ts'
-import type { Storage } from './storage/storage.ts'
 
 const BLOCKED_DOMAINS = [
   'googlesyndication.com',
@@ -21,11 +21,11 @@ const BLOCKED_DOMAINS = [
 export class ScreenCapturer {
   public static readonly tmpDir: string = path.join(os.tmpdir(), 'paparazzo-browser')
 
-  readonly #storage: Storage
+  readonly #fileStore: FileStore
   readonly #aiClient: AIClient
 
-  constructor(storage: Storage, aiClient: AIClient) {
-    this.#storage = storage
+  constructor(fileStore: FileStore, aiClient: AIClient) {
+    this.#fileStore = fileStore
     this.#aiClient = aiClient
   }
 
@@ -94,13 +94,13 @@ export class ScreenCapturer {
       // --------------------------------------------------------------------------------------------------------
       console.log(`  saving image...`)
       const screenshotBuffer = await page.screenshot({ fullPage: true })
-      await this.#storage.saveScreenshot(`${dateStr}/${site.slug}.png`, screenshotBuffer)
+      await this.#fileStore.writeFile(`${dateStr}/${site.slug}.png`, screenshotBuffer)
 
       // extract text using AI
       // --------------------------------------------------------------------------------------------------------
       console.log(`  extracting text...`)
       const structuredMarkdown = await this.#aiClient.structureAndTranslate(screenshotBuffer, site.country)
-      await this.#storage.saveText(`${dateStr}/${site.slug}.md`, structuredMarkdown)
+      await this.#fileStore.writeFile(`${dateStr}/${site.slug}.md`, structuredMarkdown)
     } finally {
       await context.close()
       await fs.rm(ScreenCapturer.tmpDir, { recursive: true, force: true })

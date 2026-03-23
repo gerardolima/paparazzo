@@ -2,11 +2,11 @@ import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { after, before, describe, it } from 'node:test'
-import { LocalStorage } from './local-storage.ts'
+import { FileStoreLocal } from './file-store-local.ts'
 
-describe('LocalStorage', () => {
+describe('FileStoreLocal', () => {
   const testDir = 'test-output'
-  const adapter = new LocalStorage(testDir)
+  const store = new FileStoreLocal(testDir)
 
   before(async () => {
     await fs.rm(testDir, { recursive: true, force: true })
@@ -20,7 +20,7 @@ describe('LocalStorage', () => {
     const filename = 'test-image.png'
     const data = Buffer.from('mock image data')
 
-    await adapter.saveScreenshot(filename, data)
+    await store.writeFile(filename, data)
 
     const savedData = await fs.readFile(path.join(testDir, filename))
     assert.deepEqual(savedData, data)
@@ -30,7 +30,7 @@ describe('LocalStorage', () => {
     const filename = 'test-doc.md'
     const content = '# Hello World'
 
-    await adapter.saveText(filename, content)
+    await store.writeFile(filename, content)
 
     const savedContent = await fs.readFile(path.join(testDir, filename), { encoding: 'utf-8' })
     assert.equal(savedContent, content)
@@ -40,7 +40,7 @@ describe('LocalStorage', () => {
     const filename = 'deep/nested/dir/test.txt'
     const content = 'nested'
 
-    await adapter.saveText(filename, content)
+    await store.writeFile(filename, content)
 
     const savedContent = await fs.readFile(path.join(testDir, filename), { encoding: 'utf-8' })
     assert.equal(savedContent, content)
@@ -50,18 +50,18 @@ describe('LocalStorage', () => {
     const filename = 'read-test/doc.md'
     const content = '<h2>Headlines</h2><p>Some news</p>'
 
-    await adapter.saveText(filename, content)
-    const result = await adapter.readText(filename)
+    await store.writeFile(filename, content)
+    const result = await store.readFile(filename)
 
     assert.equal(result, content)
   })
 
   it('lists entries in a directory', async () => {
     const dateDir = '2024-01-01'
-    await adapter.saveText(`${dateDir}/a.md`, 'content')
-    await adapter.saveScreenshot(`${dateDir}/b.png`, Buffer.from('data'))
+    await store.writeFile(`${dateDir}/a.md`, 'content')
+    await store.writeFile(`${dateDir}/b.png`, Buffer.from('data'))
 
-    const entries = await adapter.listEntries(dateDir)
+    const entries = await store.readdir(dateDir)
     assert.deepEqual(entries.sort(), ['a.md', 'b.png'])
   })
 })

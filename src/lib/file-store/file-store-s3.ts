@@ -1,7 +1,7 @@
 import { GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import type { Storage } from './storage.ts'
+import type { FileStore } from './file-store.ts'
 
-export class S3Storage implements Storage {
+export class FileStoreS3 implements FileStore {
   readonly #client: S3Client
   readonly #bucket: string
   readonly #prefix: string
@@ -12,32 +12,22 @@ export class S3Storage implements Storage {
     this.#prefix = prefix
   }
 
-  async saveScreenshot(filename: string, data: Buffer): Promise<void> {
-    const key = `${this.#prefix}${filename}`
+  async writeFile(path: string, data: Buffer | string): Promise<void> {
+    const key = `${this.#prefix}${path}`
+    const contentType: string = this.#contentType(path)
+
     await this.#client.send(
       new PutObjectCommand({
         Bucket: this.#bucket,
         Key: key,
         Body: data,
-        ContentType: 'image/png',
+        ContentType: contentType,
       }),
     )
   }
 
-  async saveText(filename: string, content: string): Promise<void> {
-    const key = `${this.#prefix}${filename}`
-    await this.#client.send(
-      new PutObjectCommand({
-        Bucket: this.#bucket,
-        Key: key,
-        Body: content,
-        ContentType: filename.endsWith('.html') ? 'text/html' : 'text/markdown',
-      }),
-    )
-  }
-
-  async readText(filename: string): Promise<string> {
-    const key = `${this.#prefix}${filename}`
+  async readFile(path: string): Promise<string> {
+    const key = `${this.#prefix}${path}`
     const response = await this.#client.send(
       new GetObjectCommand({
         Bucket: this.#bucket,
@@ -47,8 +37,8 @@ export class S3Storage implements Storage {
     return response.Body?.transformToString('utf-8') ?? ''
   }
 
-  async listEntries(dateStr: string): Promise<string[]> {
-    const prefix = `${this.#prefix}${dateStr}/`
+  async readdir(path: string): Promise<string[]> {
+    const prefix = `${this.#prefix}${path}/`
     const command = new ListObjectsV2Command({
       Bucket: this.#bucket,
       Prefix: prefix,
@@ -60,7 +50,20 @@ export class S3Storage implements Storage {
       return []
     }
 
-    // Return only the basenames (relative to the date folder)
     return response.Contents.map((item) => item.Key?.substring(prefix.length)).filter((name): name is string => !!name)
+  }
+
+  #contentType(path: string) {
+    const ext = path.slice(path.lastIndexOf('.'))
+    switch (ext) {
+      case '.png':
+        return 'image/png'
+      case '.html':
+        return 'text/html'
+      case '.md':
+        return 'text/markdown'
+      default:
+        return 'application/octet-stream'
+    }
   }
 }

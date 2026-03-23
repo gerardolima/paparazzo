@@ -3,13 +3,13 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { after, before, describe, it } from 'node:test'
 import type { Site } from './data/sites.ts'
+import { FileStoreLocal } from './file-store/file-store-local.ts'
 import { ReportGenerator } from './report-generator.ts'
-import { LocalStorage } from './storage/local-storage.ts'
 
 describe('ReportGenerator (INTEGRATION)', () => {
   const testDir = './out/test/gallery'
-  const adapter = new LocalStorage(testDir)
-  const generator = new ReportGenerator(adapter)
+  const fileStore = new FileStoreLocal(testDir)
+  const generator = new ReportGenerator(fileStore)
   const dateStr = '2024-01-01'
 
   const sites: Site[] = [
@@ -36,9 +36,9 @@ describe('ReportGenerator (INTEGRATION)', () => {
   before(async () => {
     await fs.rm(testDir, { recursive: true, force: true })
     // Seed some data using slugs that match the sites
-    await adapter.saveScreenshot(`${dateStr}/test1.png`, Buffer.from('img1'))
-    await adapter.saveText(`${dateStr}/test1.md`, '<h2>Test1 Headlines</h2><p>Breaking news</p>')
-    await adapter.saveScreenshot(`${dateStr}/test2.png`, Buffer.from('img2'))
+    await fileStore.writeFile(`${dateStr}/test1.png`, Buffer.from('img1'))
+    await fileStore.writeFile(`${dateStr}/test1.md`, '<h2>Test1 Headlines</h2><p>Breaking news</p>')
+    await fileStore.writeFile(`${dateStr}/test2.png`, Buffer.from('img2'))
   })
 
   after(async () => {

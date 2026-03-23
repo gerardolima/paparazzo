@@ -2,24 +2,24 @@ import assert from 'node:assert/strict'
 import { beforeEach, describe, it } from 'node:test'
 import { GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { mockClient } from 'aws-sdk-client-mock'
-import { S3Storage } from './s3-storage.ts'
+import { FileStoreS3 } from './file-store-s3.ts'
 
 const s3Mock = mockClient(S3Client)
 
-describe('S3Storage', () => {
+describe('FileStoreS3', () => {
   const bucket = 'test-bucket'
-  let storage: S3Storage
+  let store: FileStoreS3
 
   beforeEach(() => {
     s3Mock.reset()
-    storage = new S3Storage(bucket)
+    store = new FileStoreS3(bucket)
   })
 
   it('saves a screenshot to S3', async () => {
     s3Mock.on(PutObjectCommand).resolves({})
 
     const data = Buffer.from('fake-image')
-    await storage.saveScreenshot('2024-01-01/site.png', data)
+    await store.writeFile('2024-01-01/site.png', data)
 
     const calls = s3Mock.commandCalls(PutObjectCommand)
     assert.strictEqual(calls.length, 1)
@@ -31,7 +31,7 @@ describe('S3Storage', () => {
   it('saves text to S3', async () => {
     s3Mock.on(PutObjectCommand).resolves({})
 
-    await storage.saveText('2024-01-01/site.md', 'some content')
+    await store.writeFile('2024-01-01/site.md', 'some content')
 
     const calls = s3Mock.commandCalls(PutObjectCommand)
     assert.strictEqual(calls.length, 1)
@@ -43,7 +43,7 @@ describe('S3Storage', () => {
       Body: { transformToString: async () => '<h2>Headlines</h2>' } as never,
     })
 
-    const result = await storage.readText('2024-01-01/site.md')
+    const result = await store.readFile('2024-01-01/site.md')
 
     assert.equal(result, '<h2>Headlines</h2>')
     const calls = s3Mock.commandCalls(GetObjectCommand)
@@ -61,7 +61,7 @@ describe('S3Storage', () => {
       ],
     })
 
-    const entries = await storage.listEntries('2024-01-01')
+    const entries = await store.readdir('2024-01-01')
 
     assert.deepStrictEqual(entries, ['site1.png', 'site1.md', 'site2.png'])
     const calls = s3Mock.commandCalls(ListObjectsV2Command)
