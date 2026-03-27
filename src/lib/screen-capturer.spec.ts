@@ -20,7 +20,7 @@ const mockContext = {
   close: mock.fn(async () => {}),
 }
 
-const mockChromium = { launchPersistentContext: mock.fn(async () => mockContext) }
+const mockChromium = { launchPersistentContext: mock.fn(async (_dir: string, _opts: unknown) => mockContext) }
 
 mock.module('playwright', { namedExports: { chromium: mockChromium } })
 
@@ -131,12 +131,22 @@ describe('ScreenCapturer', () => {
       assert.equal(mockContext.close.mock.callCount(), 1)
     })
 
+    it('launches browser in a directory unique to the site slug', async () => {
+      const capturer = new ScreenCapturer(mockFileStore, mockAIClient)
+      await capturer.capture(testSite, '2024-06-15')
+
+      assert.equal(mockChromium.launchPersistentContext.mock.callCount(), 1)
+      const dirArg = mockChromium.launchPersistentContext.mock.calls[0].arguments[0]
+      assert.ok(dirArg.includes('example-agency'), `expected dir to contain slug, got: ${dirArg}`)
+    })
+
     it('removes browser data directory after capture', async () => {
       const capturer = new ScreenCapturer(mockFileStore, mockAIClient)
       await capturer.capture(testSite, '2024-06-15')
 
       assert.equal(mockRm.mock.callCount(), 1)
-      assert.equal(mockRm.mock.calls[0].arguments[0], ScreenCapturer.tmpDir)
+      const rmPath = mockRm.mock.calls[0].arguments[0]
+      assert.ok(rmPath.includes('example-agency'), `expected rm path to contain slug, got: ${rmPath}`)
       assert.deepEqual(mockRm.mock.calls[0].arguments[1], { recursive: true, force: true })
     })
 
@@ -149,7 +159,8 @@ describe('ScreenCapturer', () => {
       await assert.rejects(() => capturer.capture(testSite, '2024-06-15'))
 
       assert.equal(mockRm.mock.callCount(), 1)
-      assert.equal(mockRm.mock.calls[0].arguments[0], ScreenCapturer.tmpDir)
+      const rmPath = mockRm.mock.calls[0].arguments[0]
+      assert.ok(rmPath.includes('example-agency'), `expected rm path to contain slug, got: ${rmPath}`)
       assert.deepEqual(mockRm.mock.calls[0].arguments[1], { recursive: true, force: true })
     })
   })

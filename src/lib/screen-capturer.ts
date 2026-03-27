@@ -19,8 +19,6 @@ const BLOCKED_DOMAINS = [
 ]
 
 export class ScreenCapturer {
-  public static readonly tmpDir: string = path.join(os.tmpdir(), 'paparazzo-browser')
-
   readonly #fileStore: FileStore
   readonly #aiClient: AIClient
 
@@ -31,8 +29,9 @@ export class ScreenCapturer {
 
   async capture(site: Site, dateStr: string): Promise<void> {
     const startTime = performance.now()
+    const tmpDir = path.join(os.tmpdir(), `paparazzo-${site.slug}`)
 
-    const context = await chromium.launchPersistentContext(ScreenCapturer.tmpDir, {
+    const context = await chromium.launchPersistentContext(tmpDir, {
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -103,7 +102,7 @@ export class ScreenCapturer {
       await this.#fileStore.writeFile(`${dateStr}/${site.slug}.md`, structuredMarkdown)
     } finally {
       await context.close()
-      await fs.rm(ScreenCapturer.tmpDir, { recursive: true, force: true })
+      await fs.rm(tmpDir, { recursive: true, force: true })
 
       const elapsedSecs = ((performance.now() - startTime) / 1000).toFixed(1)
       const memoryMB = (process.memoryUsage.rss() / 1024 / 1024).toFixed(0)
