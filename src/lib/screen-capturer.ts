@@ -61,7 +61,7 @@ export class ScreenCapturer {
 
       console.log(`  opening site: ${site.url}...`)
       await page.setViewportSize({ width: 1440, height: 900 })
-      await page.goto(site.url, { waitUntil: 'domcontentloaded', timeout: 30_000 })
+      await page.goto(site.url, { waitUntil: 'domcontentloaded', timeout: 15_000 })
 
       // dismiss banners (basic heuristic)
       // --------------------------------------------------------------------------------------------------------
