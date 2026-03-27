@@ -25,7 +25,13 @@ async function getApiKey(): Promise<string> {
   return apiKey
 }
 
-export const handler = async () => {
+type LambdaContext = {
+  getRemainingTimeInMillis(): number
+}
+
+const TIMEOUT_THRESHOLD_MS = 60_000
+
+export const handler = async (_event: unknown, context: LambdaContext) => {
   const apiKey = await getApiKey()
 
   const dateStr = new Date().toISOString().split('T')[0]
@@ -38,8 +44,15 @@ export const handler = async () => {
   const enabledSites = await siteRepo.findEnabled()
   const processed: string[] = []
 
+  let timedOut = false
   const total = enabledSites.length
   for (let i = 0; i < total; i++) {
+    if (context.getRemainingTimeInMillis() < TIMEOUT_THRESHOLD_MS) {
+      console.warn(`Timeout approaching — stopping after ${i} of ${total} sites`)
+      timedOut = true
+      break
+    }
+
     const site = enabledSites[i]
     try {
       console.log(`${i + 1} / ${total} Processing ${site.name} (${site.version})...`)
@@ -56,6 +69,6 @@ export const handler = async () => {
 
   return {
     statusCode: 200,
-    body: JSON.stringify({ dateStr, processed, total: enabledSites.length }),
+    body: JSON.stringify({ dateStr, processed, total: enabledSites.length, timedOut }),
   }
 }

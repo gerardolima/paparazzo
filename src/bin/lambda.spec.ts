@@ -76,12 +76,17 @@ mock.module('@aws-sdk/client-ssm', {
 
 const { handler } = await import('./lambda.ts')
 
+const mockLambdaContext = {
+  getRemainingTimeInMillis: mock.fn((): number => 300_000),
+}
+
 describe('handler', () => {
   beforeEach(() => {
     mockCapture.mock.mockImplementation(async () => {})
     mockGenerate.mock.mockImplementation(async () => {})
     mockGenerateIndex.mock.mockImplementation(async () => {})
     mockSsmSend.mock.mockImplementation(async () => ({ Parameter: { Value: 'test-api-key' } }))
+    mockLambdaContext.getRemainingTimeInMillis.mock.mockImplementation(() => 300_000)
   })
 
   afterEach(() => {
@@ -89,18 +94,19 @@ describe('handler', () => {
     mockGenerate.mock.resetCalls()
     mockGenerateIndex.mock.resetCalls()
     mockSsmSend.mock.resetCalls()
+    mockLambdaContext.getRemainingTimeInMillis.mock.resetCalls()
   })
 
   it('throws when SSM parameter returns empty value', async () => {
     mockSsmSend.mock.mockImplementation(async () => ({ Parameter: { Value: undefined as unknown as string } }))
 
-    await assert.rejects(() => handler(), {
+    await assert.rejects(() => handler(undefined, mockLambdaContext), {
       message: /SSM parameter/,
     })
   })
 
   it('processes only enabled sites and generates report on success', async () => {
-    const result = await handler()
+    const result = await handler(undefined, mockLambdaContext)
 
     assert.equal(mockCapture.mock.callCount(), 2)
     assert.equal(mockGenerate.mock.callCount(), 1)
@@ -114,7 +120,7 @@ describe('handler', () => {
       if (callCount === 1) throw new Error('site failure')
     })
 
-    const result = await handler()
+    const result = await handler(undefined, mockLambdaContext)
 
     assert.equal(mockCapture.mock.callCount(), 2)
     assert.equal(mockGenerate.mock.callCount(), 1)
@@ -122,7 +128,7 @@ describe('handler', () => {
   })
 
   it('returns 200 with summary of enabled sites only', async () => {
-    const result = await handler()
+    const result = await handler(undefined, mockLambdaContext)
     const body = JSON.parse(result.body)
 
     assert.equal(result.statusCode, 200)
@@ -132,8 +138,34 @@ describe('handler', () => {
   })
 
   it('updates root index after generating daily report', async () => {
-    await handler()
+    await handler(undefined, mockLambdaContext)
 
     assert.equal(mockGenerateIndex.mock.callCount(), 1)
+  })
+
+  it('stops processing when remaining time falls below threshold', async () => {
+    let callCount = 0
+    mockLambdaContext.getRemainingTimeInMillis.mock.mockImplementation(() => {
+      callCount++
+      return callCount <= 1 ? 300_000 : 30_000
+    })
+
+    const result = await handler(undefined, mockLambdaContext)
+    const body = JSON.parse(result.body)
+
+    assert.equal(mockCapture.mock.callCount(), 1)
+    assert.equal(body.timedOut, true)
+    assert.equal(mockGenerate.mock.callCount(), 1)
+  })
+
+  it('generates report even when timed out before processing any site', async () => {
+    mockLambdaContext.getRemainingTimeInMillis.mock.mockImplementation(() => 10_000)
+
+    const result = await handler(undefined, mockLambdaContext)
+    const body = JSON.parse(result.body)
+
+    assert.equal(mockCapture.mock.callCount(), 0)
+    assert.equal(mockGenerate.mock.callCount(), 1)
+    assert.equal(body.timedOut, true)
   })
 })
