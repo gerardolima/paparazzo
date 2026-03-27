@@ -41,7 +41,7 @@ describe('ReportGenerator', () => {
   const mockFileStore = {
     writeFile: mock.fn(async (_path: string, _data: Buffer | string): Promise<void> => {}),
     readFile: mock.fn(async (_path: string): Promise<string> => ''),
-    readdir: mock.fn(async (_path: string): Promise<string[]> => []),
+    readdir: mock.fn(async (_path: string, _type?: string): Promise<string[]> => []),
   } as const satisfies FileStore
 
   beforeEach(() => {
@@ -166,6 +166,65 @@ describe('ReportGenerator', () => {
       const writeFileFn = mockFileStore.writeFile as unknown as MockFn
       const [, html] = writeFileFn.mock.calls[0].arguments as [string, string]
       assert.ok(html.includes('<title>Paparazzo Daily Report - 2024-07-04</title>'))
+    })
+  })
+
+  describe('generateIndex', () => {
+    it('writes index.html at root path', async () => {
+      ;(mockFileStore.readdir as unknown as MockFn).mock.mockImplementation(async (_path: string, type?: string) =>
+        type === 'directory' ? ['2024-01-01'] : [],
+      )
+
+      const generator = new ReportGenerator(mockFileStore)
+      await generator.generateIndex()
+
+      const writeFileFn = mockFileStore.writeFile as unknown as MockFn
+      const [path] = writeFileFn.mock.calls[0].arguments as [string, string]
+      assert.equal(path, 'index.html')
+    })
+
+    it('lists date directories sorted newest first', async () => {
+      ;(mockFileStore.readdir as unknown as MockFn).mock.mockImplementation(async (_path: string, type?: string) =>
+        type === 'directory' ? ['2024-01-01', '2025-03-27', '2024-06-15'] : [],
+      )
+
+      const generator = new ReportGenerator(mockFileStore)
+      await generator.generateIndex()
+
+      const writeFileFn = mockFileStore.writeFile as unknown as MockFn
+      const [, html] = writeFileFn.mock.calls[0].arguments as [string, string]
+      const firstDateIdx = html.indexOf('2025-03-27')
+      const secondDateIdx = html.indexOf('2024-06-15')
+      const thirdDateIdx = html.indexOf('2024-01-01')
+      assert.ok(firstDateIdx < secondDateIdx, 'newest date appears before middle date')
+      assert.ok(secondDateIdx < thirdDateIdx, 'middle date appears before oldest date')
+    })
+
+    it('filters out non-date entries', async () => {
+      ;(mockFileStore.readdir as unknown as MockFn).mock.mockImplementation(async (_path: string, type?: string) =>
+        type === 'directory' ? ['2024-01-01', 'temp', 'index.html', '2024-06-15'] : [],
+      )
+
+      const generator = new ReportGenerator(mockFileStore)
+      await generator.generateIndex()
+
+      const writeFileFn = mockFileStore.writeFile as unknown as MockFn
+      const [, html] = writeFileFn.mock.calls[0].arguments as [string, string]
+      assert.ok(html.includes('2024-01-01'))
+      assert.ok(html.includes('2024-06-15'))
+      assert.ok(!html.includes('temp'))
+    })
+
+    it('generates empty list when no date directories exist', async () => {
+      ;(mockFileStore.readdir as unknown as MockFn).mock.mockImplementation(async (_path: string, _type?: string) => [])
+
+      const generator = new ReportGenerator(mockFileStore)
+      await generator.generateIndex()
+
+      const writeFileFn = mockFileStore.writeFile as unknown as MockFn
+      const [, html] = writeFileFn.mock.calls[0].arguments as [string, string]
+      assert.ok(html.includes('<!DOCTYPE html>'))
+      assert.ok(!html.includes('<li>'))
     })
   })
 })

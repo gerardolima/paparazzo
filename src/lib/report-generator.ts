@@ -1,11 +1,43 @@
 import type { FileStore } from './file-store/file-store.ts'
 import type { Site } from './site-repository/site-repository.ts'
 
+const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
 export class ReportGenerator {
   readonly #fileStore: FileStore
 
   constructor(fileStore: FileStore) {
     this.#fileStore = fileStore
+  }
+
+  async generateIndex(): Promise<void> {
+    const dirs = await this.#fileStore.readdir('', 'directory')
+    const dates = dirs.filter((d) => DATE_PATTERN.test(d)).sort((a, b) => b.localeCompare(a))
+
+    const listHtml = dates.map((d) => `      <li><a href="${d}/index.html">${d}</a></li>`).join('\n')
+
+    const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paparazzo Reports</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: #f4f4f9; padding: 20px; }
+        a { color: #007bff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        li { margin: 8px 0; font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+    <h1>Paparazzo Reports</h1>
+    <ul>
+${listHtml}
+    </ul>
+</body>
+</html>`
+
+    await this.#fileStore.writeFile('index.html', html)
   }
 
   async generate(dateStr: string, sites: Site[]): Promise<void> {

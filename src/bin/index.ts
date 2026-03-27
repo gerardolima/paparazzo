@@ -32,6 +32,7 @@ async function run() {
 
   console.log('Generating report...')
   await generator.generate(dateStr, enabledSites)
+  await generator.generateIndex()
 
   console.log(`Done! Report available in out/media/${dateStr}/index.html`)
 }

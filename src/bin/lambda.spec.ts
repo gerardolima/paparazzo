@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, it, mock } from 'node:test'
 
 const mockCapture = mock.fn(async () => {})
 const mockGenerate = mock.fn(async () => {})
+const mockGenerateIndex = mock.fn(async () => {})
 const mockSsmSend = mock.fn(async () => ({ Parameter: { Value: 'test-api-key' } }))
 
 mock.module('../lib/config/config.ts', {
@@ -21,6 +22,7 @@ mock.module('../lib/report-generator.ts', {
   namedExports: {
     ReportGenerator: class {
       generate = mockGenerate
+      generateIndex = mockGenerateIndex
     },
   },
 })
@@ -78,12 +80,14 @@ describe('handler', () => {
   beforeEach(() => {
     mockCapture.mock.mockImplementation(async () => {})
     mockGenerate.mock.mockImplementation(async () => {})
+    mockGenerateIndex.mock.mockImplementation(async () => {})
     mockSsmSend.mock.mockImplementation(async () => ({ Parameter: { Value: 'test-api-key' } }))
   })
 
   afterEach(() => {
     mockCapture.mock.resetCalls()
     mockGenerate.mock.resetCalls()
+    mockGenerateIndex.mock.resetCalls()
     mockSsmSend.mock.resetCalls()
   })
 
@@ -125,5 +129,11 @@ describe('handler', () => {
     assert.ok(body.processed)
     assert.equal(body.processed.length, 2)
     assert.equal(body.total, 2)
+  })
+
+  it('updates root index after generating daily report', async () => {
+    await handler()
+
+    assert.equal(mockGenerateIndex.mock.callCount(), 1)
   })
 })

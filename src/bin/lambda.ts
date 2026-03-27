@@ -52,6 +52,7 @@ export const handler = async () => {
 
   console.log('Generating report...')
   await generator.generate(dateStr, enabledSites)
+  await generator.generateIndex()
 
   return {
     statusCode: 200,

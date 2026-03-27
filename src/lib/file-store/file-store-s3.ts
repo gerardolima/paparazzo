@@ -1,5 +1,5 @@
 import { GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import type { FileStore } from './file-store.ts'
+import type { FileStore, ReaddirType } from './file-store.ts'
 
 export class FileStoreS3 implements FileStore {
   readonly #client: S3Client
@@ -37,20 +37,30 @@ export class FileStoreS3 implements FileStore {
     return response.Body?.transformToString('utf-8') ?? ''
   }
 
-  async readdir(path: string): Promise<string[]> {
-    const prefix = `${this.#prefix}${path}/`
-    const command = new ListObjectsV2Command({
-      Bucket: this.#bucket,
-      Prefix: prefix,
-    })
+  async readdir(path: string, type: ReaddirType = 'file'): Promise<string[]> {
+    return type === 'directory' ? this.#readdirDirs(path) : this.#readdirFiles(path)
+  }
 
-    const response = await this.#client.send(command)
+  async #readdirFiles(path: string): Promise<string[]> {
+    const prefix = `${this.#prefix}${path}/`
+    const response = await this.#client.send(new ListObjectsV2Command({ Bucket: this.#bucket, Prefix: prefix }))
 
     if (!response.Contents) {
       return []
     }
 
     return response.Contents.map((item) => item.Key?.substring(prefix.length)).filter((name): name is string => !!name)
+  }
+
+  async #readdirDirs(path: string): Promise<string[]> {
+    const prefix = path ? `${this.#prefix}${path}/` : this.#prefix
+    const response = await this.#client.send(
+      new ListObjectsV2Command({ Bucket: this.#bucket, Prefix: prefix, Delimiter: '/' }),
+    )
+
+    return (response.CommonPrefixes ?? [])
+      .map((p) => p.Prefix?.replace(prefix, '').replace(/\/$/, ''))
+      .filter((name): name is string => !!name)
   }
 
   #contentType(path: string) {

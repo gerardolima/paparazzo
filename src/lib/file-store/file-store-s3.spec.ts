@@ -67,4 +67,29 @@ describe('FileStoreS3', () => {
     const calls = s3Mock.commandCalls(ListObjectsV2Command)
     assert.strictEqual(calls[0].args[0].input.Prefix, 'media/2024-01-01/')
   })
+
+  it('lists subdirectories using CommonPrefixes', async () => {
+    s3Mock.on(ListObjectsV2Command).resolves({
+      CommonPrefixes: [
+        { Prefix: 'media/2024-01-01/' },
+        { Prefix: 'media/2024-06-15/' },
+        { Prefix: 'media/2025-03-27/' },
+      ],
+    })
+
+    const dirs = await store.readdir('', 'directory')
+
+    assert.deepStrictEqual(dirs, ['2024-01-01', '2024-06-15', '2025-03-27'])
+    const calls = s3Mock.commandCalls(ListObjectsV2Command)
+    assert.strictEqual(calls[0].args[0].input.Prefix, 'media/')
+    assert.strictEqual(calls[0].args[0].input.Delimiter, '/')
+  })
+
+  it('returns empty array when no subdirectories exist', async () => {
+    s3Mock.on(ListObjectsV2Command).resolves({})
+
+    const dirs = await store.readdir('', 'directory')
+
+    assert.deepStrictEqual(dirs, [])
+  })
 })

@@ -64,4 +64,22 @@ describe('FileStoreLocal', () => {
     const entries = await store.readdir(dateDir)
     assert.deepEqual(entries.sort(), ['a.md', 'b.png'])
   })
+
+  it('lists subdirectories', async () => {
+    await store.writeFile('2024-01-01/a.png', Buffer.from('data'))
+    await store.writeFile('2024-06-15/b.png', Buffer.from('data'))
+
+    const dirs = await store.readdir('', 'directory')
+
+    assert.ok(dirs.includes('2024-01-01'))
+    assert.ok(dirs.includes('2024-06-15'))
+  })
+
+  it('returns empty array when directory does not exist for listSubdirs', async () => {
+    const emptyStore = new FileStoreLocal('nonexistent-dir')
+
+    const dirs = await emptyStore.readdir('', 'directory')
+
+    assert.deepEqual(dirs, [])
+  })
 })
