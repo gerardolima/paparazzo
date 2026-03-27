@@ -278,7 +278,7 @@ export const SITES: Site[] = [
     country: 'Letónia',
     version: 'original',
     url: 'https://leta.lv/',
-    enabled: true,
+    enabled: false,
   },
   {
     slug: 'lusa-por',
