@@ -69,11 +69,11 @@ export class ScreenCapturer {
       ].join()
 
       let acceptButtons = page.locator(locators)
-      while ((await acceptButtons.count()) > 0 && counter < 5) {
+      while ((await acceptButtons.count()) > 0 && counter < 3) {
         counter++
         await acceptButtons
           .first()
-          .click({ timeout: 5000 })
+          .click({ timeout: 2000 })
           .catch(() => {})
 
         acceptButtons = page.locator(locators)
