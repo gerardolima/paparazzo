@@ -20,11 +20,11 @@ describe('ScreenCapturer (INTEGRATION)', () => {
   } else {
     // Mock structurer for CI/local runs without a key
     aiClient = {
-      structureAndTranslate: mock.fn(async () => '# Mocked Structured News\n\nContent translated to English.'),
+      getText: mock.fn(async () => '# Mocked Structured News\n\nContent translated to English.'),
     } as const satisfies AIClient
   }
 
-  const capturer = new ScreenCapturer(fileStore, aiClient)
+  const capturer = new ScreenCapturer()
 
   const testSite: Site = {
     slug: 'efe-esp',
@@ -36,8 +36,14 @@ describe('ScreenCapturer (INTEGRATION)', () => {
     enabled: true,
   }
 
+  let screenshotBuffer: Buffer
+
   before(async () => {
     await fs.rm(testDir, { recursive: true, force: true })
+    screenshotBuffer = await capturer.capture(testSite)
+    await fileStore.writeFile('2024-01-01/efe-esp.png', screenshotBuffer)
+    const md = await aiClient.getText(screenshotBuffer, testSite.country)
+    await fileStore.writeFile('2024-01-01/efe-esp.md', md)
   })
 
   after(async () => {
@@ -45,10 +51,6 @@ describe('ScreenCapturer (INTEGRATION)', () => {
   })
 
   describe('capture', () => {
-    before(async () => {
-      await capturer.capture(testSite, '2024-01-01')
-    })
-
     it('captures a screenshot of a real webpage', async () => {
       const screenshotPath = path.join(testDir, '2024-01-01', 'efe-esp.png')
       const stat = await fs.stat(screenshotPath)

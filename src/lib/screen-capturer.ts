@@ -3,8 +3,6 @@ import os from 'node:os'
 import path from 'node:path'
 import { performance } from 'node:perf_hooks'
 import { chromium } from 'playwright'
-import type { FileStore } from './file-store/file-store.ts'
-import type { AIClient } from './ia-client/ai-client.ts'
 import type { Site } from './site-repository/site-repository.ts'
 
 const BLOCKED_DOMAINS = [
@@ -19,15 +17,7 @@ const BLOCKED_DOMAINS = [
 ]
 
 export class ScreenCapturer {
-  readonly #fileStore: FileStore
-  readonly #aiClient: AIClient
-
-  constructor(fileStore: FileStore, aiClient: AIClient) {
-    this.#fileStore = fileStore
-    this.#aiClient = aiClient
-  }
-
-  async capture(site: Site, dateStr: string): Promise<void> {
+  async capture(site: Site): Promise<Buffer> {
     const startTime = performance.now()
     const tmpDir = path.join(os.tmpdir(), `paparazzo-${site.slug}`)
 
@@ -89,17 +79,8 @@ export class ScreenCapturer {
         acceptButtons = page.locator(locators)
       }
 
-      // save image
-      // --------------------------------------------------------------------------------------------------------
-      console.log(`  saving image...`)
-      const screenshotBuffer = await page.screenshot({ fullPage: true })
-      await this.#fileStore.writeFile(`${dateStr}/${site.slug}.png`, screenshotBuffer)
-
-      // extract text using AI
-      // --------------------------------------------------------------------------------------------------------
-      console.log(`  extracting text...`)
-      const structuredMarkdown = await this.#aiClient.structureAndTranslate(screenshotBuffer, site.country)
-      await this.#fileStore.writeFile(`${dateStr}/${site.slug}.md`, structuredMarkdown)
+      console.log(`  taking screenshot...`)
+      return await page.screenshot({ fullPage: true })
     } finally {
       await context.close()
       await fs.rm(tmpDir, { recursive: true, force: true })

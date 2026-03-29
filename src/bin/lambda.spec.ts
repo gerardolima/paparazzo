@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, it, mock } from 'node:test'
 
-const mockCapture = mock.fn(async () => {})
+const mockCapture = mock.fn(async () => Buffer.from('fake-screenshot'))
 const mockGenerate = mock.fn(async () => {})
 const mockGenerateIndex = mock.fn(async () => {})
+const mockWriteFile = mock.fn(async (_path: string, _data: Buffer | string) => {})
+const mockStructureAndTranslate = mock.fn(async (_buffer: Buffer, _country: string) => '<h2>Content</h2>')
 const mockSsmSend = mock.fn(async () => ({ Parameter: { Value: 'test-api-key' } }))
 
 mock.module('../lib/config/config.ts', {
@@ -27,10 +29,20 @@ mock.module('../lib/report-generator.ts', {
   },
 })
 mock.module('../lib/file-store/file-store-s3.ts', {
-  namedExports: { FileStoreS3: class {} },
+  namedExports: {
+    FileStoreS3: class {
+      writeFile = mockWriteFile
+      readFile = mock.fn(async () => '')
+      readdir = mock.fn(async () => [])
+    },
+  },
 })
 mock.module('../lib/ia-client/ai-client-google.ts', {
-  namedExports: { AIClientGoogle: class {} },
+  namedExports: {
+    AIClientGoogle: class {
+      structureAndTranslate = mockStructureAndTranslate
+    },
+  },
 })
 mock.module('../data/sites.ts', {
   namedExports: {
@@ -82,9 +94,11 @@ const mockLambdaContext = {
 
 describe('handler', () => {
   beforeEach(() => {
-    mockCapture.mock.mockImplementation(async () => {})
+    mockCapture.mock.mockImplementation(async () => Buffer.from('fake-screenshot'))
     mockGenerate.mock.mockImplementation(async () => {})
     mockGenerateIndex.mock.mockImplementation(async () => {})
+    mockWriteFile.mock.mockImplementation(async () => {})
+    mockStructureAndTranslate.mock.mockImplementation(async () => '<h2>Content</h2>')
     mockSsmSend.mock.mockImplementation(async () => ({ Parameter: { Value: 'test-api-key' } }))
     mockLambdaContext.getRemainingTimeInMillis.mock.mockImplementation(() => 300_000)
   })
@@ -93,6 +107,8 @@ describe('handler', () => {
     mockCapture.mock.resetCalls()
     mockGenerate.mock.resetCalls()
     mockGenerateIndex.mock.resetCalls()
+    mockWriteFile.mock.resetCalls()
+    mockStructureAndTranslate.mock.resetCalls()
     mockSsmSend.mock.resetCalls()
     mockLambdaContext.getRemainingTimeInMillis.mock.resetCalls()
   })
@@ -113,11 +129,40 @@ describe('handler', () => {
     assert.equal(result.statusCode, 200)
   })
 
-  it('continues processing remaining sites when one fails', async () => {
+  it('saves screenshot to file store after capture', async () => {
+    await handler(undefined, mockLambdaContext)
+
+    const pngWrites = mockWriteFile.mock.calls.filter((c) => String(c.arguments[0]).endsWith('.png'))
+    assert.equal(pngWrites.length, 2)
+    assert.ok(String(pngWrites[0].arguments[0]).includes('site1.png'))
+    assert.ok(Buffer.isBuffer(pngWrites[0].arguments[1]))
+  })
+
+  it('passes screenshot buffer and country to AI client', async () => {
+    await handler(undefined, mockLambdaContext)
+
+    assert.equal(mockStructureAndTranslate.mock.callCount(), 2)
+    const firstCall = mockStructureAndTranslate.mock.calls[0]
+    assert.ok(Buffer.isBuffer(firstCall.arguments[0]))
+    assert.equal(firstCall.arguments[1], 'CountryA')
+    assert.equal(mockStructureAndTranslate.mock.calls[1].arguments[1], 'CountryB')
+  })
+
+  it('saves AI-extracted markdown to file store', async () => {
+    await handler(undefined, mockLambdaContext)
+
+    const mdWrites = mockWriteFile.mock.calls.filter((c) => String(c.arguments[0]).endsWith('.md'))
+    assert.equal(mdWrites.length, 2)
+    assert.ok(String(mdWrites[0].arguments[0]).includes('site1.md'))
+    assert.equal(mdWrites[0].arguments[1], '<h2>Content</h2>')
+  })
+
+  it('continues processing remaining sites when capture fails', async () => {
     let callCount = 0
     mockCapture.mock.mockImplementation(async () => {
       callCount++
       if (callCount === 1) throw new Error('site failure')
+      return Buffer.from('fake-screenshot')
     })
 
     const result = await handler(undefined, mockLambdaContext)
@@ -125,6 +170,32 @@ describe('handler', () => {
     assert.equal(mockCapture.mock.callCount(), 2)
     assert.equal(mockGenerate.mock.callCount(), 1)
     assert.equal(result.statusCode, 200)
+  })
+
+  it('continues processing remaining sites when AI extraction fails', async () => {
+    let callCount = 0
+    mockStructureAndTranslate.mock.mockImplementation(async () => {
+      callCount++
+      if (callCount === 1) throw new Error('AI service unavailable')
+      return '<h2>Content</h2>'
+    })
+
+    const result = await handler(undefined, mockLambdaContext)
+
+    assert.equal(mockCapture.mock.callCount(), 2)
+    assert.equal(mockStructureAndTranslate.mock.callCount(), 2)
+    assert.equal(result.statusCode, 200)
+  })
+
+  it('saves screenshot even when AI extraction fails', async () => {
+    mockStructureAndTranslate.mock.mockImplementation(async () => {
+      throw new Error('AI service unavailable')
+    })
+
+    await handler(undefined, mockLambdaContext)
+
+    const pngWrites = mockWriteFile.mock.calls.filter((c) => String(c.arguments[0]).endsWith('.png'))
+    assert.equal(pngWrites.length, 2)
   })
 
   it('returns 200 with summary of enabled sites only', async () => {

@@ -8,7 +8,8 @@ export class AIClientGoogle implements AIClient {
     this.#genAI = new GoogleGenerativeAI(apiKey)
   }
 
-  async structureAndTranslate(screenshotBuffer: Buffer, country: string): Promise<string> {
+  /** Extracts and translates structured text from the given screenshot. */
+  async getText(screenshotBuffer: Buffer, country: string): Promise<string> {
     // const model = 'gemini-flash-latest'
     const model = 'models/gemini-3.1-flash-lite-preview'
     const ai = this.#genAI.getGenerativeModel({ model })

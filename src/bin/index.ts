@@ -13,7 +13,7 @@ async function run() {
   const siteRepo = new SiteRepositoryStatic(SITES)
   const fileStore = new FileStoreLocal()
   const aiClient = new AIClientGoogle(apiKeyGoogleAI)
-  const capturer = new ScreenCapturer(fileStore, aiClient)
+  const capturer = new ScreenCapturer()
   const generator = new ReportGenerator(fileStore)
 
   console.log(`Starting Paparazzo for ${dateStr}...`)
@@ -24,7 +24,11 @@ async function run() {
     const site = enabledSites[i]
     try {
       console.log(`${i + 1} / ${total} Processing ${site.name} (${site.version})...`)
-      await capturer.capture(site, dateStr)
+      const buffer = await capturer.capture(site)
+      await fileStore.writeFile(`${dateStr}/${site.slug}.png`, buffer)
+
+      const md = await aiClient.getText(buffer, site.country)
+      await fileStore.writeFile(`${dateStr}/${site.slug}.md`, md)
     } catch (error) {
       console.error(`Failed to process ${site.name} (${site.version}):`, error)
     }
