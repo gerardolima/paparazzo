@@ -217,6 +217,15 @@ describe('handler', () => {
       assert.equal(mockGetText.mock.callCount(), 0)
       assert.equal(mockGenerate.mock.callCount(), 1)
     })
+
+    it('reports skipped count for fully processed sites', async () => {
+      mockExists.mock.mockImplementation(async () => true)
+
+      const result = await handler(undefined, mockLambdaContext)
+      const body = JSON.parse(result.body)
+
+      assert.equal(body.skipped, 2)
+    })
   })
 
   describe('queue-based retry for extraction', () => {
@@ -250,6 +259,20 @@ describe('handler', () => {
       assert.equal(mockGetText.mock.callCount(), 4)
       assert.equal(body.processed.length, 1)
     })
+
+    it('reports failed sites with error message in response', async () => {
+      mockGetText.mock.mockImplementation(async (_buffer: Buffer, country: string) => {
+        if (country === 'CountryA') throw new Error('503 Service Unavailable')
+        return '<h2>Content</h2>'
+      })
+
+      const result = await handler(undefined, mockLambdaContext)
+      const body = JSON.parse(result.body)
+
+      assert.equal(body.failed.length, 1)
+      assert.equal(body.failed[0].site, 'Site1 (original)')
+      assert.equal(body.failed[0].error, '503 Service Unavailable')
+    })
   })
 
   describe('error handling', () => {
@@ -266,6 +289,22 @@ describe('handler', () => {
       assert.equal(mockCapture.mock.callCount(), 2)
       // Only site2 has PNG → only site2 extracted
       assert.equal(mockGetText.mock.callCount(), 1)
+    })
+
+    it('reports capture failures in response', async () => {
+      let callCount = 0
+      mockCapture.mock.mockImplementation(async () => {
+        callCount++
+        if (callCount === 1) throw new Error('net::ERR_CONNECTION_TIMED_OUT')
+        return Buffer.from('fake-screenshot')
+      })
+
+      const result = await handler(undefined, mockLambdaContext)
+      const body = JSON.parse(result.body)
+
+      assert.equal(body.failed.length, 1)
+      assert.equal(body.failed[0].site, 'Site1 (original)')
+      assert.equal(body.failed[0].error, 'net::ERR_CONNECTION_TIMED_OUT')
     })
 
     it('saves screenshot even when AI extraction fails for all sites', async () => {

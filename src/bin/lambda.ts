@@ -45,6 +45,8 @@ export const handler = async (_event: unknown, context: LambdaContext) => {
 
   const enabledSites = await siteRepo.findEnabled()
   const processed: string[] = []
+  const failed: Array<{ site: string; error: string }> = []
+  let skipped = 0
   let timedOut = false
   const total = enabledSites.length
 
@@ -69,7 +71,9 @@ export const handler = async (_event: unknown, context: LambdaContext) => {
       const buffer = await capturer.capture(site)
       await fileStore.writeFile(pngPath, buffer)
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
       console.error(`Failed to capture ${site.name} (${site.version}):`, error)
+      failed.push({ site: `${site.name} (${site.version})`, error: message })
     }
   }
 
@@ -80,7 +84,11 @@ export const handler = async (_event: unknown, context: LambdaContext) => {
   for (const site of enabledSites) {
     const pngPath = `${dateStr}/${site.slug}.png`
     const mdPath = `${dateStr}/${site.slug}.md`
-    if ((await fileStore.exists(pngPath)) && !(await fileStore.exists(mdPath))) {
+    const pngExists = await fileStore.exists(pngPath)
+    const mdExists = await fileStore.exists(mdPath)
+    if (pngExists && mdExists) {
+      skipped++
+    } else if (pngExists) {
       queue.push({ site, attempts: 0 })
     }
   }
@@ -107,10 +115,12 @@ export const handler = async (_event: unknown, context: LambdaContext) => {
         )
         queue.push({ ...item, attempts: item.attempts + 1 })
       } else {
+        const message = error instanceof Error ? error.message : String(error)
         console.error(
           `Failed to extract ${item.site.name} (${item.site.version}) after ${item.attempts + 1} attempts:`,
           error,
         )
+        failed.push({ site: `${item.site.name} (${item.site.version})`, error: message })
       }
     }
   }
@@ -119,8 +129,11 @@ export const handler = async (_event: unknown, context: LambdaContext) => {
   await generator.generate(dateStr, enabledSites)
   await generator.generateIndex()
 
+  const summary = { dateStr, processed, failed, skipped, total, timedOut }
+  console.log('Summary:', JSON.stringify(summary))
+
   return {
     statusCode: 200,
-    body: JSON.stringify({ dateStr, processed, total: enabledSites.length, timedOut }),
+    body: JSON.stringify(summary),
   }
 }
