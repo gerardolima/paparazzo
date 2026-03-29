@@ -1,4 +1,10 @@
-import { GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import {
+  GetObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3'
 import type { FileStore, ReaddirType } from './file-store.ts'
 
 export class FileStoreS3 implements FileStore {
@@ -26,7 +32,7 @@ export class FileStoreS3 implements FileStore {
     )
   }
 
-  async readFile(path: string): Promise<string> {
+  async readFile(path: string): Promise<Buffer> {
     const key = `${this.#prefix}${path}`
     const response = await this.#client.send(
       new GetObjectCommand({
@@ -34,7 +40,18 @@ export class FileStoreS3 implements FileStore {
         Key: key,
       }),
     )
-    return response.Body?.transformToString('utf-8') ?? ''
+    const bytes = await response.Body?.transformToByteArray()
+    return Buffer.from(bytes ?? [])
+  }
+
+  async exists(path: string): Promise<boolean> {
+    const key = `${this.#prefix}${path}`
+    try {
+      await this.#client.send(new HeadObjectCommand({ Bucket: this.#bucket, Key: key }))
+      return true
+    } catch {
+      return false
+    }
   }
 
   async readdir(path: string, type: ReaddirType = 'file'): Promise<string[]> {

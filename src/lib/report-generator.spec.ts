@@ -40,8 +40,9 @@ const sites: Site[] = [
 describe('ReportGenerator', () => {
   const mockFileStore = {
     writeFile: mock.fn(async (_path: string, _data: Buffer | string): Promise<void> => {}),
-    readFile: mock.fn(async (_path: string): Promise<string> => ''),
+    readFile: mock.fn(async (_path: string): Promise<Buffer> => Buffer.from('')),
     readdir: mock.fn(async (_path: string, _type?: string): Promise<string[]> => []),
+    exists: mock.fn(async (_path: string): Promise<boolean> => false),
   } as const satisfies FileStore
 
   beforeEach(() => {
@@ -53,9 +54,9 @@ describe('ReportGenerator', () => {
       'lusa-eng.md',
     ])
     mockFileStore.readFile.mock.mockImplementation(async (filename: string) => {
-      if (filename.includes('efe-esp')) return '<h2>EFE Headlines</h2><p>Spain news</p>'
-      if (filename.includes('lusa-eng')) return '<h2>Lusa Headlines</h2><p>Portugal news</p>'
-      return ''
+      if (filename.includes('efe-esp')) return Buffer.from('<h2>EFE Headlines</h2><p>Spain news</p>')
+      if (filename.includes('lusa-eng')) return Buffer.from('<h2>Lusa Headlines</h2><p>Portugal news</p>')
+      return Buffer.from('')
     })
   })
 

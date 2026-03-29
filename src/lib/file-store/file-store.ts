@@ -6,6 +6,7 @@ export type ReaddirType = 'file' | 'directory'
 
 export interface FileStore {
   writeFile(path: string, data: Buffer | string): Promise<void>
-  readFile(path: string): Promise<string>
+  readFile(path: string): Promise<Buffer>
   readdir(path: string, type?: ReaddirType): Promise<string[]>
+  exists(path: string): Promise<boolean>
 }

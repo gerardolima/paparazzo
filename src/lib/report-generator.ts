@@ -56,7 +56,8 @@ ${listHtml}
         .filter((s) => files.includes(s.replace('.png', '.md')))
         .map(async (s) => {
           const slug = s.replace('.png', '')
-          const content = await this.#fileStore.readFile(`${dateStr}/${slug}.md`)
+          const buffer = await this.#fileStore.readFile(`${dateStr}/${slug}.md`)
+          const content = buffer.toString('utf-8')
           slugToContent.set(slug, content)
         }),
     )

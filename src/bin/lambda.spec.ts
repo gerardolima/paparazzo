@@ -5,7 +5,7 @@ const mockCapture = mock.fn(async () => Buffer.from('fake-screenshot'))
 const mockGenerate = mock.fn(async () => {})
 const mockGenerateIndex = mock.fn(async () => {})
 const mockWriteFile = mock.fn(async (_path: string, _data: Buffer | string) => {})
-const mockStructureAndTranslate = mock.fn(async (_buffer: Buffer, _country: string) => '<h2>Content</h2>')
+const mockGetText = mock.fn(async (_buffer: Buffer, _country: string) => '<h2>Content</h2>')
 const mockSsmSend = mock.fn(async () => ({ Parameter: { Value: 'test-api-key' } }))
 
 mock.module('../lib/config/config.ts', {
@@ -32,15 +32,16 @@ mock.module('../lib/file-store/file-store-s3.ts', {
   namedExports: {
     FileStoreS3: class {
       writeFile = mockWriteFile
-      readFile = mock.fn(async () => '')
+      readFile = mock.fn(async () => Buffer.from(''))
       readdir = mock.fn(async () => [])
+      exists = mock.fn(async () => false)
     },
   },
 })
 mock.module('../lib/ia-client/ai-client-google.ts', {
   namedExports: {
     AIClientGoogle: class {
-      structureAndTranslate = mockStructureAndTranslate
+      getText = mockGetText
     },
   },
 })
@@ -98,7 +99,7 @@ describe('handler', () => {
     mockGenerate.mock.mockImplementation(async () => {})
     mockGenerateIndex.mock.mockImplementation(async () => {})
     mockWriteFile.mock.mockImplementation(async () => {})
-    mockStructureAndTranslate.mock.mockImplementation(async () => '<h2>Content</h2>')
+    mockGetText.mock.mockImplementation(async () => '<h2>Content</h2>')
     mockSsmSend.mock.mockImplementation(async () => ({ Parameter: { Value: 'test-api-key' } }))
     mockLambdaContext.getRemainingTimeInMillis.mock.mockImplementation(() => 300_000)
   })
@@ -108,7 +109,7 @@ describe('handler', () => {
     mockGenerate.mock.resetCalls()
     mockGenerateIndex.mock.resetCalls()
     mockWriteFile.mock.resetCalls()
-    mockStructureAndTranslate.mock.resetCalls()
+    mockGetText.mock.resetCalls()
     mockSsmSend.mock.resetCalls()
     mockLambdaContext.getRemainingTimeInMillis.mock.resetCalls()
   })
@@ -141,11 +142,11 @@ describe('handler', () => {
   it('passes screenshot buffer and country to AI client', async () => {
     await handler(undefined, mockLambdaContext)
 
-    assert.equal(mockStructureAndTranslate.mock.callCount(), 2)
-    const firstCall = mockStructureAndTranslate.mock.calls[0]
+    assert.equal(mockGetText.mock.callCount(), 2)
+    const firstCall = mockGetText.mock.calls[0]
     assert.ok(Buffer.isBuffer(firstCall.arguments[0]))
     assert.equal(firstCall.arguments[1], 'CountryA')
-    assert.equal(mockStructureAndTranslate.mock.calls[1].arguments[1], 'CountryB')
+    assert.equal(mockGetText.mock.calls[1].arguments[1], 'CountryB')
   })
 
   it('saves AI-extracted markdown to file store', async () => {
@@ -174,7 +175,7 @@ describe('handler', () => {
 
   it('continues processing remaining sites when AI extraction fails', async () => {
     let callCount = 0
-    mockStructureAndTranslate.mock.mockImplementation(async () => {
+    mockGetText.mock.mockImplementation(async () => {
       callCount++
       if (callCount === 1) throw new Error('AI service unavailable')
       return '<h2>Content</h2>'
@@ -183,12 +184,12 @@ describe('handler', () => {
     const result = await handler(undefined, mockLambdaContext)
 
     assert.equal(mockCapture.mock.callCount(), 2)
-    assert.equal(mockStructureAndTranslate.mock.callCount(), 2)
+    assert.equal(mockGetText.mock.callCount(), 2)
     assert.equal(result.statusCode, 200)
   })
 
   it('saves screenshot even when AI extraction fails', async () => {
-    mockStructureAndTranslate.mock.mockImplementation(async () => {
+    mockGetText.mock.mockImplementation(async () => {
       throw new Error('AI service unavailable')
     })
 

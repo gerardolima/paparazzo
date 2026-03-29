@@ -46,14 +46,37 @@ describe('FileStoreLocal', () => {
     assert.equal(savedContent, content)
   })
 
-  it('reads text content from a saved file', async () => {
+  it('reads file content as Buffer', async () => {
     const filename = 'read-test/doc.md'
     const content = '<h2>Headlines</h2><p>Some news</p>'
 
     await store.writeFile(filename, content)
     const result = await store.readFile(filename)
 
-    assert.equal(result, content)
+    assert.ok(Buffer.isBuffer(result))
+    assert.equal(result.toString('utf-8'), content)
+  })
+
+  it('reads binary file content as Buffer', async () => {
+    const filename = 'read-test/image.png'
+    const data = Buffer.from([0x89, 0x50, 0x4e, 0x47]) // PNG magic bytes
+
+    await store.writeFile(filename, data)
+    const result = await store.readFile(filename)
+
+    assert.ok(Buffer.isBuffer(result))
+    assert.deepEqual(result, data)
+  })
+
+  it('returns true when file exists', async () => {
+    const filename = 'exists-test/doc.md'
+    await store.writeFile(filename, 'content')
+
+    assert.equal(await store.exists(filename), true)
+  })
+
+  it('returns false when file does not exist', async () => {
+    assert.equal(await store.exists('nonexistent/file.md'), false)
   })
 
   it('lists entries in a directory', async () => {

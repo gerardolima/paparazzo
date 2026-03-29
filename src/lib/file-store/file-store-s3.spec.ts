@@ -1,6 +1,12 @@
 import assert from 'node:assert/strict'
 import { beforeEach, describe, it } from 'node:test'
-import { GetObjectCommand, ListObjectsV2Command, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import {
+  GetObjectCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3'
 import { mockClient } from 'aws-sdk-client-mock'
 import { FileStoreS3 } from './file-store-s3.ts'
 
@@ -38,18 +44,35 @@ describe('FileStoreS3', () => {
     assert.strictEqual(calls[0].args[0].input.ContentType, 'text/markdown')
   })
 
-  it('reads text content from S3', async () => {
+  it('reads file content as Buffer from S3', async () => {
+    const bytes = new Uint8Array([0x89, 0x50, 0x4e, 0x47])
     s3Mock.on(GetObjectCommand).resolves({
-      Body: { transformToString: async () => '<h2>Headlines</h2>' } as never,
+      Body: { transformToByteArray: async () => bytes } as never,
     })
 
     const result = await store.readFile('2024-01-01/site.md')
 
-    assert.equal(result, '<h2>Headlines</h2>')
+    assert.ok(Buffer.isBuffer(result))
+    assert.deepEqual(result, Buffer.from(bytes))
     const calls = s3Mock.commandCalls(GetObjectCommand)
     assert.strictEqual(calls.length, 1)
     assert.strictEqual(calls[0].args[0].input.Bucket, bucket)
     assert.strictEqual(calls[0].args[0].input.Key, 'media/2024-01-01/site.md')
+  })
+
+  it('returns true when file exists in S3', async () => {
+    s3Mock.on(HeadObjectCommand).resolves({})
+
+    assert.equal(await store.exists('2024-01-01/site.png'), true)
+    const calls = s3Mock.commandCalls(HeadObjectCommand)
+    assert.strictEqual(calls[0].args[0].input.Bucket, bucket)
+    assert.strictEqual(calls[0].args[0].input.Key, 'media/2024-01-01/site.png')
+  })
+
+  it('returns false when file does not exist in S3', async () => {
+    s3Mock.on(HeadObjectCommand).rejects({ name: 'NotFound' })
+
+    assert.equal(await store.exists('2024-01-01/missing.png'), false)
   })
 
   it('lists entries for a specific date', async () => {

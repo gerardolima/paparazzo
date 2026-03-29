@@ -24,8 +24,17 @@ export class FileStoreLocal implements FileStore {
     }
   }
 
-  async readFile(path: string): Promise<string> {
-    return fs.readFile(nodePath.join(this.#baseDir, path), { encoding: 'utf-8' })
+  async readFile(path: string): Promise<Buffer> {
+    return fs.readFile(nodePath.join(this.#baseDir, path))
+  }
+
+  async exists(path: string): Promise<boolean> {
+    try {
+      await fs.access(nodePath.join(this.#baseDir, path))
+      return true
+    } catch {
+      return false
+    }
   }
 
   async readdir(path: string, type: ReaddirType = 'file'): Promise<string[]> {
