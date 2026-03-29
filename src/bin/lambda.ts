@@ -5,6 +5,7 @@ import { FileStoreS3 } from '../lib/file-store/file-store-s3.ts'
 import { AIClientGoogle } from '../lib/ia-client/ai-client-google.ts'
 import { ReportGenerator } from '../lib/report-generator.ts'
 import { ScreenCapturer } from '../lib/screen-capturer.ts'
+import type { Site } from '../lib/site-repository/site-repository.ts'
 import { SiteRepositoryStatic } from '../lib/site-repository/site-repository-static.ts'
 
 const ssm = new SSMClient()
@@ -30,6 +31,7 @@ type LambdaContext = {
 }
 
 const TIMEOUT_THRESHOLD_MS = 60_000
+const MAX_RETRIES = 2
 
 export const handler = async (_event: unknown, context: LambdaContext) => {
   const apiKey = await getApiKey()
@@ -43,28 +45,73 @@ export const handler = async (_event: unknown, context: LambdaContext) => {
 
   const enabledSites = await siteRepo.findEnabled()
   const processed: string[] = []
-
   let timedOut = false
   const total = enabledSites.length
+
+  // Phase 1: Capture screenshots
   for (let i = 0; i < total; i++) {
     if (context.getRemainingTimeInMillis() < TIMEOUT_THRESHOLD_MS) {
-      console.warn(`Timeout approaching — stopping after ${i} of ${total} sites`)
+      console.warn(`Timeout approaching — stopping capture after ${i} of ${total} sites`)
       timedOut = true
       break
     }
 
     const site = enabledSites[i]
+    const pngPath = `${dateStr}/${site.slug}.png`
+
+    if (await fileStore.exists(pngPath)) {
+      console.log(`${i + 1} / ${total} ${site.name} (${site.version}): screenshot exists, skipping`)
+      continue
+    }
+
     try {
-      console.log(`${i + 1} / ${total} Processing ${site.name} (${site.version})...`)
+      console.log(`${i + 1} / ${total} Capturing ${site.name} (${site.version})...`)
       const buffer = await capturer.capture(site)
-      await fileStore.writeFile(`${dateStr}/${site.slug}.png`, buffer)
-
-      const md = await aiClient.getText(buffer, site.country)
-      await fileStore.writeFile(`${dateStr}/${site.slug}.md`, md)
-
-      processed.push(`${site.name} (${site.version})`)
+      await fileStore.writeFile(pngPath, buffer)
     } catch (error) {
-      console.error(`Failed to process ${site.name} (${site.version}):`, error)
+      console.error(`Failed to capture ${site.name} (${site.version}):`, error)
+    }
+  }
+
+  // Phase 2: Extract text with queue-based retry
+  type QueueItem = { site: Site; attempts: number }
+  const queue: QueueItem[] = []
+
+  for (const site of enabledSites) {
+    const pngPath = `${dateStr}/${site.slug}.png`
+    const mdPath = `${dateStr}/${site.slug}.md`
+    if ((await fileStore.exists(pngPath)) && !(await fileStore.exists(mdPath))) {
+      queue.push({ site, attempts: 0 })
+    }
+  }
+
+  while (queue.length > 0) {
+    if (context.getRemainingTimeInMillis() < TIMEOUT_THRESHOLD_MS) {
+      console.warn(`Timeout approaching — stopping extraction with ${queue.length} items remaining`)
+      timedOut = true
+      break
+    }
+
+    // biome-ignore lint/style/noNonNullAssertion: the queue is not empty
+    const item = queue.shift()!
+    try {
+      console.log(`Extracting text for ${item.site.name} (${item.site.version})...`)
+      const png = await fileStore.readFile(`${dateStr}/${item.site.slug}.png`)
+      const md = await aiClient.getText(png, item.site.country)
+      await fileStore.writeFile(`${dateStr}/${item.site.slug}.md`, md)
+      processed.push(`${item.site.name} (${item.site.version})`)
+    } catch (error) {
+      if (item.attempts < MAX_RETRIES) {
+        console.warn(
+          `Extraction failed for ${item.site.name} (attempt ${item.attempts + 1}/${MAX_RETRIES + 1}), re-queueing`,
+        )
+        queue.push({ ...item, attempts: item.attempts + 1 })
+      } else {
+        console.error(
+          `Failed to extract ${item.site.name} (${item.site.version}) after ${item.attempts + 1} attempts:`,
+          error,
+        )
+      }
     }
   }
 
