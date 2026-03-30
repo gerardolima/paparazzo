@@ -1,8 +1,8 @@
-import type { AIClient } from './ia-client/ai-client.ts'
 import type { FileStore } from './file-store/file-store.ts'
+import type { AIClient } from './ia-client/ai-client.ts'
 import { ReportGenerator } from './report-generator.ts'
-import type { Site } from './site-repository/site-repository.ts'
 import type { ScreenCapturer } from './screen-capturer.ts'
+import type { Site } from './site-repository/site-repository.ts'
 
 const MAX_RETRIES = 2
 

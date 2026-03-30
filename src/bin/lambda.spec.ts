@@ -1,16 +1,20 @@
 import assert from 'node:assert/strict'
 import { afterEach, beforeEach, describe, it, mock } from 'node:test'
-import type { ProcessResult } from '../lib/main.ts'
+import type { Context } from 'aws-lambda'
+import type { ProcessOptions, ProcessResult } from '../lib/main.ts'
 
-const mockStart = mock.fn(async (): Promise<ProcessResult> => ({
-  dateStr: '2026-03-30',
-  processed: ['Site1 (original)'],
-  failed: [],
-  skipped: 0,
-  total: 1,
-  timedOut: false,
-}))
+const mockStart = mock.fn(
+  async (_options: ProcessOptions): Promise<ProcessResult> => ({
+    dateStr: '2026-03-30',
+    processed: ['Site1 (original)'],
+    failed: [],
+    skipped: 0,
+    total: 1,
+    timedOut: false,
+  }),
+)
 const mockSsmSend = mock.fn(async () => ({ Parameter: { Value: 'test-api-key' } }))
+const mockGetRemainingTime = mock.fn((): number => 300_000)
 
 mock.module('../lib/config/config.ts', {
   namedExports: {
@@ -31,7 +35,17 @@ mock.module('../lib/screen-capturer.ts', {
 })
 mock.module('../data/sites.ts', {
   namedExports: {
-    SITES: [{ slug: 's1', name: 'S1', description: '', country: 'C', version: 'original', url: 'https://s1.com', enabled: true }],
+    SITES: [
+      {
+        slug: 's1',
+        name: 'S1',
+        description: '',
+        country: 'C',
+        version: 'original',
+        url: 'https://s1.com',
+        enabled: true,
+      },
+    ],
   },
 })
 mock.module('@aws-sdk/client-ssm', {
@@ -45,9 +59,7 @@ mock.module('@aws-sdk/client-ssm', {
 
 const { handler } = await import('./lambda.ts')
 
-const mockLambdaContext = {
-  getRemainingTimeInMillis: mock.fn((): number => 300_000),
-}
+const mockLambdaContext = { getRemainingTimeInMillis: mockGetRemainingTime } as unknown as Context
 
 describe('handler', () => {
   beforeEach(() => {
@@ -60,13 +72,13 @@ describe('handler', () => {
       timedOut: false,
     }))
     mockSsmSend.mock.mockImplementation(async () => ({ Parameter: { Value: 'test-api-key' } }))
-    mockLambdaContext.getRemainingTimeInMillis.mock.mockImplementation(() => 300_000)
+    mockGetRemainingTime.mock.mockImplementation(() => 300_000)
   })
 
   afterEach(() => {
     mockStart.mock.resetCalls()
     mockSsmSend.mock.resetCalls()
-    mockLambdaContext.getRemainingTimeInMillis.mock.resetCalls()
+    mockGetRemainingTime.mock.resetCalls()
   })
 
   it('throws when SSM parameter returns empty value', async () => {
@@ -81,7 +93,9 @@ describe('handler', () => {
     await handler(undefined, mockLambdaContext)
 
     assert.equal(mockStart.mock.callCount(), 1)
-    const options = mockStart.mock.calls[0].arguments[0]
+
+    // biome-ignore lint/style/noNonNullAssertion: callCount is already checked above
+    const options = mockStart.mock.calls[0]!.arguments[0]
     assert.ok(options.signal instanceof AbortSignal)
     assert.ok(Array.isArray(options.sites))
     assert.ok(options.fileStore)
@@ -98,12 +112,10 @@ describe('handler', () => {
     assert.equal(body.total, 1)
   })
 
-  it('aborts signal when timeout expires via Promise.race', async () => {
-    mockLambdaContext.getRemainingTimeInMillis.mock.mockImplementation(() => 60_000)
+  it('aborts signal when timeout expires', async () => {
+    mockGetRemainingTime.mock.mockImplementation(() => 60_000)
 
-    // start blocks long enough for the 0ms delay to fire
-    mockStart.mock.mockImplementation(async (options) => {
-      // Wait a tick so the delay(0).then(abort) can fire
+    mockStart.mock.mockImplementation(async (options: ProcessOptions) => {
       await new Promise((resolve) => setTimeout(resolve, 10))
       return {
         dateStr: '2026-03-30',

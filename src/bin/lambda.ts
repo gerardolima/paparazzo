@@ -1,5 +1,6 @@
-import type { Context } from 'aws-lambda'
+import { setTimeout as delay } from 'node:timers/promises'
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm'
+import type { Context } from 'aws-lambda'
 import { SITES } from '../data/sites.ts'
 import { loadEnv } from '../lib/config/config.ts'
 import { FileStoreS3 } from '../lib/file-store/file-store-s3.ts'
@@ -27,11 +28,6 @@ async function getApiKey(): Promise<string> {
 }
 
 const TIMEOUT_THRESHOLD_MS = 60_000
-const delay = (ms: number) =>
-  new Promise<void>((resolve) => {
-    const timer = setTimeout(resolve, ms)
-    timer.unref()
-  })
 
 export const handler = async (_event: unknown, context: Context) => {
   const apiKey = await getApiKey()
@@ -40,20 +36,16 @@ export const handler = async (_event: unknown, context: Context) => {
   const controller = new AbortController()
   const timeoutMs = context.getRemainingTimeInMillis() - TIMEOUT_THRESHOLD_MS
 
-  const processing = start({
+  // trigger the abort signal, so `start` can stop execution before Lambda hard-kills the process
+  delay(Math.max(0, timeoutMs), undefined, { ref: false }).then(() => controller.abort())
+
+  const summary = await start({
     sites,
     fileStore: new FileStoreS3(s3Bucket),
     aiClient: new AIClientGoogle(apiKey),
     capturer: new ScreenCapturer(),
     signal: controller.signal,
   })
-
-  await Promise.race([
-    processing,
-    delay(Math.max(0, timeoutMs)).then(() => controller.abort()),
-  ])
-
-  const summary = await processing
   console.log('Summary:', JSON.stringify(summary))
 
   return { statusCode: 200, body: JSON.stringify(summary) }
