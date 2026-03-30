@@ -1,3 +1,4 @@
+import type { Context } from 'aws-lambda'
 import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm'
 import { SITES } from '../data/sites.ts'
 import { loadEnv } from '../lib/config/config.ts'
@@ -25,10 +26,6 @@ async function getApiKey(): Promise<string> {
   return apiKey
 }
 
-type LambdaContext = {
-  getRemainingTimeInMillis(): number
-}
-
 const TIMEOUT_THRESHOLD_MS = 60_000
 const delay = (ms: number) =>
   new Promise<void>((resolve) => {
@@ -36,7 +33,7 @@ const delay = (ms: number) =>
     timer.unref()
   })
 
-export const handler = async (_event: unknown, context: LambdaContext) => {
+export const handler = async (_event: unknown, context: Context) => {
   const apiKey = await getApiKey()
   const sites = await new SiteRepositoryStatic(SITES).findEnabled()
 
