@@ -26,7 +26,7 @@ export const SITES: Site[] = [
     country: 'França',
     version: 'original',
     url: 'https://www.afp.com',
-    enabled: true,
+    enabled: false,
   },
   {
     slug: 'agerpres-ron',
@@ -80,7 +80,7 @@ export const SITES: Site[] = [
     country: 'Países Baixos',
     version: 'original',
     url: 'https://www.anp.nl/',
-    enabled: true,
+    enabled: false,
   },
   {
     slug: 'ansa-ita',
@@ -152,7 +152,7 @@ export const SITES: Site[] = [
     country: 'Bélgica',
     version: 'original',
     url: 'https://www.belga.be/home/',
-    enabled: true,
+    enabled: false,
   },
   {
     slug: 'bta-bul',
@@ -197,7 +197,7 @@ export const SITES: Site[] = [
     country: 'Alemanha',
     version: 'original',
     url: 'https://www.dpa.com/',
-    enabled: true,
+    enabled: false,
   },
   {
     slug: 'efe-esp',
@@ -242,7 +242,7 @@ export const SITES: Site[] = [
     country: 'Croácia',
     version: 'original',
     url: 'https://www.hina.hr/',
-    enabled: true,
+    enabled: false,
   },
   {
     slug: 'keystone-deu',
@@ -251,7 +251,7 @@ export const SITES: Site[] = [
     country: 'Suíça',
     version: 'original',
     url: 'https://www.keystone-sda.ch/',
-    enabled: true,
+    enabled: false,
   },
   {
     slug: 'kosovapress-sqi',
@@ -314,7 +314,7 @@ export const SITES: Site[] = [
     country: 'Noruega',
     version: 'original',
     url: 'https://www.ntb.no/',
-    enabled: true,
+    enabled: false,
   },
   {
     slug: 'pa-eng',
@@ -323,7 +323,7 @@ export const SITES: Site[] = [
     country: 'Reino Unido',
     version: 'english',
     url: 'https://pa.media/',
-    enabled: true,
+    enabled: false,
   },
   {
     slug: 'pap-pol',
@@ -377,7 +377,7 @@ export const SITES: Site[] = [
     country: 'Finlândia',
     version: 'original',
     url: 'https://stt.fi/',
-    enabled: true,
+    enabled: false,
   },
   {
     slug: 'tanjug-spr',
@@ -440,7 +440,7 @@ export const SITES: Site[] = [
     country: 'Suécia',
     version: 'original',
     url: 'https://tt.se/',
-    enabled: true,
+    enabled: false,
   },
   {
     slug: 'ukrinform-urk',
