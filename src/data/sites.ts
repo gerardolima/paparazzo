@@ -214,7 +214,7 @@ export const SITES: Site[] = [
     description: 'Agencia EFE',
     country: 'Espanha',
     version: 'english',
-    url: 'https://efe.com/en/',
+    url: 'https://efe.com/home/',
     enabled: true,
   },
   {
