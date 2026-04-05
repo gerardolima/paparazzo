@@ -20,4 +20,24 @@ describe('SITES', () => {
 
     assert.deepEqual(names, sorted)
   })
+
+  it('has a disablementReason for every disabled site', () => {
+    const disabled = SITES.filter((s) => !s.enabled)
+    const missingReason = disabled.filter((s) => !s.disablementReason)
+
+    assert.deepEqual(
+      missingReason.map((s) => s.slug),
+      [],
+    )
+  })
+
+  it('has no disablementReason for enabled sites', () => {
+    const enabled = SITES.filter((s) => s.enabled)
+    const withReason = enabled.filter((s) => s.disablementReason)
+
+    assert.deepEqual(
+      withReason.map((s) => s.slug),
+      [],
+    )
+  })
 })

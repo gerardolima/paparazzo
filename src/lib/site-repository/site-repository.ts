@@ -6,6 +6,7 @@ export type Site = {
   version: 'original' | 'english'
   url: string
   enabled: boolean
+  disablementReason?: string
 }
 
 export interface SiteRepository {

@@ -27,6 +27,7 @@ export const SITES: Site[] = [
     version: 'original',
     url: 'https://www.afp.com',
     enabled: false,
+    disablementReason: 'B2B — site requires authentication/subscription',
   },
   {
     slug: 'agerpres-ron',
@@ -81,6 +82,7 @@ export const SITES: Site[] = [
     version: 'original',
     url: 'https://www.anp.nl/',
     enabled: false,
+    disablementReason: 'B2B — site requires authentication/subscription',
   },
   {
     slug: 'ansa-ita',
@@ -153,6 +155,7 @@ export const SITES: Site[] = [
     version: 'original',
     url: 'https://www.belga.be/home/',
     enabled: false,
+    disablementReason: 'B2B — site requires authentication/subscription',
   },
   {
     slug: 'bta-bul',
@@ -198,6 +201,7 @@ export const SITES: Site[] = [
     version: 'original',
     url: 'https://www.dpa.com/',
     enabled: false,
+    disablementReason: 'B2B — site requires authentication/subscription',
   },
   {
     slug: 'efe-esp',
@@ -243,6 +247,7 @@ export const SITES: Site[] = [
     version: 'original',
     url: 'https://www.hina.hr/',
     enabled: false,
+    disablementReason: 'B2B — site requires authentication/subscription',
   },
   {
     slug: 'keystone-deu',
@@ -252,6 +257,7 @@ export const SITES: Site[] = [
     version: 'original',
     url: 'https://www.keystone-sda.ch/',
     enabled: false,
+    disablementReason: 'B2B — site requires authentication/subscription',
   },
   {
     slug: 'kosovapress-sqi',
@@ -279,6 +285,7 @@ export const SITES: Site[] = [
     version: 'original',
     url: 'https://leta.lv/',
     enabled: false,
+    disablementReason: 'B2B — site requires authentication/subscription',
   },
   {
     slug: 'lusa-por',
@@ -315,6 +322,7 @@ export const SITES: Site[] = [
     version: 'original',
     url: 'https://www.ntb.no/',
     enabled: false,
+    disablementReason: 'B2B — site requires authentication/subscription',
   },
   {
     slug: 'pa-eng',
@@ -324,6 +332,7 @@ export const SITES: Site[] = [
     version: 'english',
     url: 'https://pa.media/',
     enabled: false,
+    disablementReason: 'B2B — site requires authentication/subscription',
   },
   {
     slug: 'pap-pol',
@@ -378,6 +387,7 @@ export const SITES: Site[] = [
     version: 'original',
     url: 'https://stt.fi/',
     enabled: false,
+    disablementReason: 'B2B — site requires authentication/subscription',
   },
   {
     slug: 'tanjug-spr',
@@ -441,6 +451,7 @@ export const SITES: Site[] = [
     version: 'original',
     url: 'https://tt.se/',
     enabled: false,
+    disablementReason: 'B2B — site requires authentication/subscription',
   },
   {
     slug: 'ukrinform-urk',
