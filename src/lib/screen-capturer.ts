@@ -35,6 +35,10 @@ export class ScreenCapturer {
         '--js-flags=--max-old-space-size=512',
         '--disk-cache-size=52428800', // 50 MB
       ],
+      locale: 'en-GB',
+      timezoneId: 'Europe/London',
+      userAgent:
+        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
     })
 
     const page = await context.newPage()
@@ -65,6 +69,8 @@ export class ScreenCapturer {
         'button:has-text("OK")', // https://www.ntb.no/
         'button:has-text("Tillåt alla")', // https://tt.se/
         'button:has-text("OK, acceptar totes")', // https://www.ana.ad/
+        'button:has-text("ΑΠΟΔΟΧΗ")', // https://www.amna.gr/
+        'button:has-text("Αποδοχή όλων")', // https://www.amna.gr/
         '#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll', // many
       ].join()
 
